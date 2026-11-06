@@ -1,0 +1,57 @@
+# 콩이 (가칭) — iPhone + Apple Watch
+# Mac에서 `xcodegen` 을 실행하면 Kongi.xcodeproj 가 만들어진다. README 참고.
+name: Kongi
+options:
+  deploymentTarget:
+    iOS: "17.0"
+    watchOS: "10.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    # ↓ 본인 것으로 바꾼다 (예: com.bboram). 전 세계에서 겹치지 않아야 한다.
+    BUNDLE_ID_PREFIX: com.example
+    SWIFT_VERSION: "5.0"
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  Kongi:
+    type: application
+    platform: iOS
+    sources:
+      - App/iOS
+      - App/Shared
+    info:
+      path: App/iOS/Info.plist
+      properties:
+        CFBundleDisplayName: 콩이
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).kongi
+        TARGETED_DEVICE_FAMILY: "1"
+    dependencies:
+      # 워치 앱을 iPhone 앱 안에 넣어서 함께 설치되게 한다.
+      - target: KongiWatch
+        embed: true
+        copy:
+          destination: productsDirectory
+          subpath: $(CONTENTS_FOLDER_PATH)/Watch
+  KongiWatch:
+    type: application
+    platform: watchOS
+    sources:
+      - App/Watch
+      - App/Shared
+    info:
+      path: App/Watch/Info.plist
+      properties:
+        CFBundleDisplayName: 콩이
+        WKApplication: true
+        WKCompanionAppBundleIdentifier: $(BUNDLE_ID_PREFIX).kongi
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).kongi.watchkitapp
+        TARGETED_DEVICE_FAMILY: "4"

@@ -1,0 +1,7 @@
+# Xcode (project.yml에서 xcodegen으로 만든다)
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+DerivedData/
+build/
+.DS_Store
