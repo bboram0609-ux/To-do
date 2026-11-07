@@ -3,6 +3,20 @@
 ADHD에 맞춘 iPhone + Apple Watch 앱. 식사·음주·복약을 한 앱의 세 모드로 관리한다.
 지금은 **공통 뼈대 + 복약 모드**까지 만들어져 있다.
 
+## 웹앱 (Mac 없이, 무료)
+
+`docs/` 폴더는 iPhone Safari에서 쓰는 웹앱 버전이다. 앱 설치나 개발자 프로그램 없이 쓸 수 있다.
+
+1. GitHub에서 이 저장소 → **Settings → Pages**
+2. **Build and deployment**의 Source를 **Deploy from a branch**로 두고, Branch에서 `claude/kongi-med-mode`와 `/docs`를 고른 뒤 **Save**
+3. 1–2분 뒤 iPhone Safari에서 `https://bboram0609-ux.github.io/To-do/` 를 연다
+4. 공유 버튼 → **홈 화면에 추가**
+5. 앱의 **기록·설정 → 캘린더 알림 파일 받기**로 약 시간을 캘린더 알림에 등록한다 (워치에도 뜬다)
+
+웹앱의 한계: 워치 앱 없음, 알림에서 바로 "먹었어요"를 누를 수 없음, 기록은 그 기기 브라우저에만 저장(백업 기능 있음).
+
+아래는 iPhone 네이티브 앱(Swift) 버전 안내다.
+
 ## 지금 되는 것
 
 - 약 추가/수정: 이름, 먹는 시간(여러 개), 늦은 복용 마감 시간, 남은 개수
