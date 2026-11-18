@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+@font-face { font-family: "P"; font-weight: 600; src: url(Pretendard-SemiBold.woff2); }
+@font-face { font-family: "P"; font-weight: 700; src: url(Pretendard-Bold.woff2); }
+@font-face { font-family: "P"; font-weight: 800; src: url(Pretendard-ExtraBold.woff2); }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { width: 1680px; background: #f6f1ea; font-family: "P", sans-serif; color: #2b2622; padding: 56px 64px 64px; }
+header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; border-bottom: 3px solid #2b2622; padding-bottom: 22px; }
+h1 { font-size: 44px; font-weight: 800; letter-spacing: -0.02em; }
+h1 small { display: block; font-size: 22px; font-weight: 600; color: #8a7d70; margin-bottom: 8px; letter-spacing: 0; }
+.meta { text-align: right; font-size: 20px; font-weight: 600; color: #6d6156; line-height: 1.6; }
+.meta b { color: #c2562f; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 44px 40px; }
+.cell { display: flex; gap: 22px; }
+.frame { flex: 0 0 216px; height: 384px; border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 3px #2b2622; position: relative; }
+.frame svg { width: 216px; height: 384px; display: block; }
+.info { flex: 1; padding-top: 4px; }
+.num { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.num span:first-child { width: 40px; height: 40px; border-radius: 50%; background: #2b2622; color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 20px; }
+.time { font-weight: 700; font-size: 18px; color: #c2562f; background: #fbe3d6; padding: 4px 12px; border-radius: 999px; }
+.label { font-size: 15px; font-weight: 700; color: #a3968a; margin: 12px 0 4px; letter-spacing: 0.04em; }
+.shot { font-size: 21px; font-weight: 800; }
+.desc { font-size: 17px; font-weight: 600; line-height: 1.5; color: #4a423b; }
+.line { font-size: 18px; font-weight: 700; line-height: 1.5; background: #fff; border-left: 5px solid #c2562f; padding: 10px 14px; border-radius: 6px; }
+footer { margin-top: 44px; display: flex; gap: 18px; }
+.tip { flex: 1; background: #fff; border-radius: 14px; padding: 18px 22px; font-size: 17px; font-weight: 600; line-height: 1.55; color: #4a423b; }
+.tip b { display: block; font-size: 18px; color: #2b2622; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1><small>쇼츠 스토리보드 v2 · 토크형 · 40초 · 세로 9:16</small>퇴근하고 볼 애니 추천</h1>
+  <div class="meta">작품 〈슈퍼 뒤에서 담배 피는 두 사람〉<br>장소 <b>책상 앞 한 자리</b> · 준비물 <b>휴대폰 거치대, (있으면) 무선 마이크</b></div>
+</header>
+<div class="grid" id="grid"></div>
+<footer>
+  <div class="tip"><b>📱 세팅은 한 번만</b>휴대폰은 눈높이, 얼굴에서 50~70cm. 창문을 마주 보고 앉으면 얼굴이 밝게 나와요. 편한 잠옷 차림 OK.</div>
+  <div class="tip"><b>🎙️ 끊지 말고 쭉 말하기</b>대본은 흐름만 보고 수다 떨듯이. 틀리면 그 문장만 다시 말하면 돼요. 쉬는 구간·NG는 편집에서 잘라요.</div>
+  <div class="tip"><b>💬 자막은 자동</b>말한 그대로 Whisper가 받아써서 화면 가운데 자막으로 넣어요. 애니 장면·흡연 장면은 넣지 않아요.</div>
+</footer>
+<script>
+const SK = "#f3caa6", HAIR = "#3a2a24", SW = "#e3b34c", INK = "#2b2622";
+// head: cx, cy, r, mood ('smile'|'talk'|'closed'|'wink')
+function head(cx, cy, r, mood = "smile") {
+  const e = r * 0.34, ey = cy + r * 0.08;
+  let eyes, mouth;
+  if (mood === "closed") {
+    eyes = `<path d="M${cx-e-r*.12} ${ey} q${r*.12} ${r*.1} ${r*.24} 0 M${cx+e-r*.12} ${ey} q${r*.12} ${r*.1} ${r*.24} 0" stroke="${INK}" stroke-width="${r*.05}" fill="none" stroke-linecap="round"/>`;
+  } else if (mood === "wink") {
+    eyes = `<ellipse cx="${cx-e}" cy="${ey}" rx="${r*.07}" ry="${r*.1}" fill="${INK}"/><path d="M${cx+e-r*.12} ${ey} q${r*.12} ${r*.1} ${r*.24} 0" stroke="${INK}" stroke-width="${r*.05}" fill="none" stroke-linecap="round"/>`;
+  } else {
+    eyes = `<ellipse cx="${cx-e}" cy="${ey}" rx="${r*.07}" ry="${r*.1}" fill="${INK}"/><ellipse cx="${cx+e}" cy="${ey}" rx="${r*.07}" ry="${r*.1}" fill="${INK}"/>`;
+  }
+  if (mood === "talk") mouth = `<ellipse cx="${cx}" cy="${cy+r*.45}" rx="${r*.13}" ry="${r*.11}" fill="#9c3b2e"/>`;
+  else mouth = `<path d="M${cx-r*.15} ${cy+r*.4} q${r*.15} ${r*.16} ${r*.3} 0" stroke="#9c3b2e" stroke-width="${r*.05}" fill="none" stroke-linecap="round"/>`;
+  return `
+  <path d="M${cx-r*1.12} ${cy-r*.1} Q${cx-r*1.2} ${cy+r*1.2} ${cx-r*.85} ${cy+r*1.25} L${cx+r*.85} ${cy+r*1.25} Q${cx+r*1.2} ${cy+r*1.2} ${cx+r*1.12} ${cy-r*.1} A${r*1.12} ${r*1.12} 0 0 0 ${cx-r*1.12} ${cy-r*.1}Z" fill="${HAIR}"/>
+  <ellipse cx="${cx}" cy="${cy+r*.12}" rx="${r*.86}" ry="${r*.95}" fill="${SK}"/>
+  <path d="M${cx-r*.95} ${cy-r*.05} Q${cx-r*.8} ${cy-r*1.05} ${cx} ${cy-r*1.02} Q${cx+r*.8} ${cy-r*1.05} ${cx+r*.95} ${cy-r*.05} Q${cx+r*.4} ${cy-r*.42} ${cx-r*.1} ${cy-r*.3} Q${cx-r*.55} ${cy-r*.45} ${cx-r*.95} ${cy-r*.05}Z" fill="${HAIR}"/>
+  ${eyes}
+  <ellipse cx="${cx-r*.52}" cy="${cy+r*.35}" rx="${r*.14}" ry="${r*.08}" fill="#ef9a86" opacity=".7"/>
+  <ellipse cx="${cx+r*.52}" cy="${cy+r*.35}" rx="${r*.14}" ry="${r*.08}" fill="#ef9a86" opacity=".7"/>
+  ${mouth}`;
+}
+function can(x, y, w, h) {
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${w*.18}" fill="#5b4a8f"/>
+  <rect x="${x}" y="${y}" width="${w}" height="${h*.12}" rx="${w*.1}" fill="#c9c6d6"/>
+  <rect x="${x+w*.15}" y="${y+h*.35}" width="${w*.7}" height="${h*.3}" rx="3" fill="#f1d36b"/>`;
+}
+function cap(text, y = 340) {
+  return `<rect x="16" y="${y-22}" width="238" height="38" rx="8" fill="rgba(0,0,0,.55)"/>
+  <text x="135" y="${y+4}" text-anchor="middle" font-family="P" font-weight="800" font-size="15.5" fill="#fff">${text}</text>`;
+}
+function guide() { // rule-of-thirds guide lines
+  return `<g stroke="#fff" stroke-opacity=".22" stroke-dasharray="4 5"><line x1="90" y1="0" x2="90" y2="480"/><line x1="180" y1="0" x2="180" y2="480"/><line x1="0" y1="160" x2="270" y2="160"/><line x1="0" y1="320" x2="270" y2="320"/></g>`;
+}
+// desk talk scene: gesture in 'up'|'two'|'chest'|'frame'|'point'|'thumb'
+function scene(g, mood, captext, bg="#e9e1d6") {
+  const PJ = "#2f3f73", PJ2 = "#e3b34c";
+  let hand = "";
+  const h = (x,y,rot,fingers) => `<g transform="translate(${x} ${y}) rotate(${rot})"><rect x="0" y="34" width="44" height="44" rx="16" fill="${SK}"/>${fingers}</g>`;
+  const F = (arr) => arr.map(([x,y,hh]) => `<rect x="${x}" y="${y}" width="10" height="${hh}" rx="5" fill="${SK}"/>`).join("");
+  if (g==="up") hand = h(212,150,12,F([[17,-6,46]]));
+  if (g==="two") hand = h(210,156,12,F([[8,-2,42],[22,-8,48]]));
+  if (g==="chest") hand = `<ellipse cx="150" cy="370" rx="26" ry="20" fill="${SK}"/>`;
+  if (g==="frame") hand = h(40,250,-25,F([[2,0,40],[14,-4,44]])) + h(186,236,25,F([[22,-4,44],[34,0,40]]));
+  if (g==="point") hand = `<g transform="translate(150 300)"><ellipse cx="0" cy="0" rx="30" ry="26" fill="${SK}"/><rect x="-6" y="-58" width="12" height="50" rx="6" fill="${SK}"/></g>`;
+  if (g==="thumb") hand = `<g transform="translate(196 236)"><rect x="0" y="20" width="44" height="40" rx="15" fill="${SK}"/><rect x="14" y="-14" width="12" height="40" rx="6" fill="${SK}"/></g>`;
+  return `<rect width="270" height="480" fill="${bg}"/>
+   <rect x="196" y="40" width="56" height="74" rx="3" fill="#cdbfae"/><rect x="202" y="46" width="44" height="34" rx="2" fill="#a8b89a"/>
+   <rect x="16" y="60" width="40" height="52" rx="3" fill="#d9cbb9"/>
+   ${guide()}
+   <path d="M18 480 L26 330 Q40 300 135 292 Q230 300 244 330 L252 480Z" fill="${PJ}"/>
+   <g fill="${PJ2}" opacity=".9"><circle cx="70" cy="350" r="7"/><circle cx="200" cy="360" r="7"/><circle cx="110" cy="420" r="7"/><circle cx="175" cy="430" r="7"/><circle cx="60" cy="440" r="7"/></g>
+   <path d="M135 296 L120 330 L150 330Z" fill="#fff" opacity=".85"/>
+   ${head(135, 190, 70, mood)}
+   <g transform="translate(46 300)"><ellipse cx="14" cy="24" rx="20" ry="16" fill="${SK}"/><rect x="18" y="0" width="12" height="26" rx="4" fill="#1d1d1d"/><circle cx="24" cy="6" r="2.5" fill="#3cd070"/></g>
+   ${hand}
+   <rect x="0" y="448" width="270" height="32" fill="#c9a77f"/><rect x="40" y="440" width="120" height="30" rx="3" fill="#f7f4ee" transform="rotate(-4 100 455)"/>
+   ${cap(captext, 395)}`;
+}
+const frames = [
+ { time: "0 ~ 3초", shot: "훅 · 검지 하나 들기", desc: "첫 마디부터 바로 텐션 높게. 인사·자기소개 없이 본론부터.",
+   line: "퇴근하고 볼 애니 하나 추천할게요. 제목부터 특이해요",
+   svg: scene("up","talk","퇴근하고 볼 애니 추천! ☝️") },
+ { time: "3 ~ 10초", shot: "제목 · 손가락 두 개", desc: "'두 사람'에서 손가락 두 개. 작품 제목은 편집에서 큰 자막으로 띄워요.",
+   line: "〈슈퍼 뒤에서 담배 피는 두 사람〉! 슈퍼 뒤에서 잠깐 쉬는 두 사람 얘기예요",
+   svg: scene("two","talk","슈퍼 뒤에서 담배 피는 두 사람 ✌️") },
+ { time: "10 ~ 20초", shot: "설정 설명 · 몸짓 크게", desc: "레퍼런스처럼 쉬지 말고 이어서 말하기. 숨 쉬는 구간은 편집에서 잘라요.",
+   line: "[스포 없이 설정 한두 문장] 그래서 둘이 매일 거기서 마주치는데…",
+   svg: scene("chest","talk","둘이 매일 거기서 마주치는데…") },
+ { time: "20 ~ 28초", shot: "포인트 · 양손으로 얼굴 감싸기", desc: "가장 좋았던 포인트에서 리액션 크게. 이 부분 자막은 강조색으로.",
+   line: "근데 이게 막 설레는 연애가 아니라 진짜 어른의 연애라서 너무 좋아요",
+   svg: scene("frame","smile","진짜 '어른의 연애'라서 좋아요 🥹") },
+ { time: "28 ~ 36초", shot: "추천 대상 · 카메라 가리키기", desc: "보는 사람을 콕 집어 말하기. 손을 카메라 쪽으로 쭉 내밀어요.",
+   line: "자극적인 거 말고 잔잔한 거 좋아하는 분들, [나만의 한마디]",
+   svg: scene("point","talk","잔잔한 거 좋아하면 무조건 👉") },
+ { time: "36 ~ 40초", shot: "마무리 · 엄지 척", desc: "짧고 세게 끝내기. 말 끝나자마자 컷.",
+   line: "넷플릭스에 있으니까 오늘 퇴근하고 바로 보세요!",
+   svg: scene("thumb","wink","오늘 퇴근하고 바로 보세요! 👍") },
+];
+document.getElementById("grid").innerHTML = frames.map((f, i) => `
+  <div class="cell">
+    <div class="frame"><svg viewBox="0 0 270 480" xmlns="http://www.w3.org/2000/svg">${f.svg}</svg></div>
+    <div class="info">
+      <div class="num"><span>${i+1}</span><span class="time">${f.time}</span></div>
+      <div class="label">구도</div><div class="shot">${f.shot}</div>
+      <div class="label">화면</div><div class="desc">${f.desc}</div>
+      <div class="label">대사</div><div class="line">${f.line}</div>
+    </div>
+  </div>`).join("");
+</script>
+</body>
+</html>
