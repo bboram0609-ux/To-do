@@ -2,238 +2,442 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>속지 메이커</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=Nanum+Pen+Script&family=Gaegu:wght@400;700&family=Jua&family=Hi+Melody&display=swap">
 <style>
+  /* Layout: tool rail on the left (tabs: 속지 / 펀칭 / 꾸미기), paper desk on the right. Stacks on phones. */
   :root {
-    --bg: #f6f3ee;
+    --bg: #e9ebef;        /* desk */
     --panel: #ffffff;
-    --ink: #2b2a28;
-    --muted: #7a756d;
-    --line: #e5dfd5;
-    --accent: #c26d4a;
-    --accent-soft: #f6e5dc;
+    --fg: #1d2330;
+    --muted: #646c7d;
+    --line: #d6dae2;
+    --accent: #2f4fc4;    /* blue fountain-pen ink */
+    --accent-soft: #e2e7fa;
+    --danger: #c23b4b;
+    --font-ui: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    --font-display: "Gowun Batang", "Nanum Myeongjo", serif;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #1c1b19; --panel: #262522; --ink: #eeeae3; --muted: #a39d93;
-      --line: #3a3833; --accent: #e0896a; --accent-soft: #3d2b23;
+      --bg: #13161c; --panel: #1b1f27; --fg: #e6e9ef; --muted: #959cab; --line: #2c323e;
+      --accent: #8fa3ff; --accent-soft: #252c47; --danger: #ff7d8c; color-scheme: dark;
     }
   }
+  :root[data-theme="dark"] {
+    --bg: #13161c; --panel: #1b1f27; --fg: #e6e9ef; --muted: #959cab; --line: #2c323e;
+    --accent: #8fa3ff; --accent-soft: #252c47; --danger: #ff7d8c; color-scheme: dark;
+  }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font-family: "Noto Sans KR", system-ui, sans-serif; font-size: 14px;
-  }
-  header {
-    padding: 18px 24px; display: flex; align-items: baseline; gap: 12px;
-    border-bottom: 1px solid var(--line);
-  }
-  header h1 { margin: 0; font-family: "Gowun Dodum", sans-serif; font-size: 24px; }
-  header p { margin: 0; color: var(--muted); }
-  .app { display: grid; grid-template-columns: 320px 1fr; min-height: calc(100vh - 66px); }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 14px; }
+
+  .app { display: grid; grid-template-columns: 340px minmax(0, 1fr); height: 100%; }
   aside {
     background: var(--panel); border-right: 1px solid var(--line);
-    padding: 16px 20px 32px; overflow-y: auto; max-height: calc(100vh - 66px);
-    position: sticky; top: 0;
+    display: flex; flex-direction: column; min-height: 0;
   }
-  .group { margin-bottom: 20px; }
-  .group h2 { font-size: 12px; letter-spacing: .04em; color: var(--muted); margin: 0 0 8px; font-weight: 500; }
-  .types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .types button {
-    border: 1px solid var(--line); background: var(--bg); color: var(--ink);
-    border-radius: 8px; padding: 8px 4px; cursor: pointer; font: inherit; font-size: 12.5px;
+  .brand { padding-block: 18px 12px; padding-inline: 20px; }
+  .brand h1 { margin: 0; font-family: var(--font-display); font-size: 24px; font-weight: 700; letter-spacing: -0.01em; }
+  .brand p { margin: 4px 0 0; color: var(--muted); font-size: 12.5px; }
+  .tabs { display: flex; gap: 4px; padding-inline: 16px; border-bottom: 1px solid var(--line); }
+  .tabs button {
+    flex: 1; border: 0; background: none; color: var(--muted); font: inherit; font-weight: 500;
+    padding: 10px 4px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
   }
-  .types button.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 700; }
-  label.row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 8px 0; }
-  label.row span { flex: 0 0 auto; }
-  select, input[type=text], input[type=number] {
-    font: inherit; color: var(--ink); background: var(--bg);
-    border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; width: 150px;
+  .tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+  .panel { overflow-y: auto; padding-block: 16px 24px; padding-inline: 20px; flex: 1; min-height: 0; }
+  .footer { padding-block: 12px 16px; padding-inline: 20px; border-top: 1px solid var(--line); display: grid; gap: 8px; }
+
+  .group { display: grid; gap: 8px; margin-bottom: 20px; }
+  .group h2 { font-size: 11.5px; letter-spacing: .06em; color: var(--muted); margin: 0; font-weight: 600; text-transform: uppercase; }
+  .chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .chips button, .seg button {
+    border: 1px solid var(--line); background: var(--bg); color: var(--fg);
+    border-radius: 6px; padding: 8px 4px; cursor: pointer; font: inherit; font-size: 12.5px;
   }
-  input[type=range] { width: 150px; accent-color: var(--accent); }
-  input[type=color] { width: 40px; height: 28px; border: 1px solid var(--line); border-radius: 6px; padding: 0; background: none; }
+  .chips button[aria-pressed="true"], .seg button[aria-pressed="true"] {
+    border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600;
+  }
+  .seg { display: flex; gap: 6px; }
+  .seg button { flex: 1; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 32px; }
+  .row > span { color: var(--fg); }
+  .row b { font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+  select, input[type=text], input[type=number], input[type=month], textarea {
+    font: inherit; color: var(--fg); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; width: 160px;
+  }
+  textarea { width: 100%; resize: vertical; min-height: 56px; }
+  input[type=range] { width: 160px; accent-color: var(--accent); }
+  input[type=color] { width: 36px; height: 28px; border: 1px solid var(--line); border-radius: 6px; padding: 1px; background: var(--bg); }
+  input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .swatches { display: flex; gap: 6px; flex-wrap: wrap; }
-  .swatches button { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
-  .swatches button.on { border-color: var(--ink); }
-  .hidden { display: none !important; }
-  .actions { display: flex; gap: 8px; margin-top: 8px; }
+  .swatches button { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); cursor: pointer; padding: 0; }
+  .swatches button[aria-pressed="true"] { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .stickers { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+  .stickers button {
+    aspect-ratio: 1; border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer;
+    padding: 4px; display: grid; place-items: center; font-size: 20px; line-height: 1;
+  }
+  .stickers button svg { width: 100%; height: 100%; }
+  .tapes { grid-template-columns: repeat(3, 1fr); }
+  .tapes button { aspect-ratio: 3 / 1; }
+  .hint { color: var(--muted); font-size: 12px; line-height: 1.55; margin: 0; }
   .btn {
-    flex: 1; border: 0; border-radius: 8px; padding: 11px; font: inherit; font-weight: 700;
-    background: var(--accent); color: #fff; cursor: pointer;
+    border: 0; border-radius: 8px; padding: 11px 12px; font: inherit; font-weight: 600;
+    background: var(--accent); color: var(--panel); cursor: pointer;
   }
+  .btn:disabled { opacity: .6; cursor: progress; }
   .btn.ghost { background: var(--accent-soft); color: var(--accent); }
-  .hint { color: var(--muted); font-size: 12px; line-height: 1.5; margin-top: 10px; }
-  main { padding: 28px; display: flex; flex-direction: column; align-items: center; gap: 24px; overflow: auto; }
-  .page {
-    background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.12); display: block;
-    max-width: 100%; height: auto;
+  .btn.small { padding: 7px 10px; font-size: 12.5px; font-weight: 500; }
+  .btn.danger { background: none; color: var(--danger); border: 1px solid var(--line); }
+  .btnrow { display: flex; gap: 6px; flex-wrap: wrap; }
+  .btnrow .btn { flex: 1; }
+  .card { border: 1px solid var(--accent); border-radius: 8px; padding: 12px; display: grid; gap: 8px; background: var(--accent-soft); margin-bottom: 20px; }
+  .card h2 { color: var(--accent); }
+  #status { min-height: 1.2em; }
+  label.upload { position: relative; overflow: hidden; text-align: center; }
+  label.upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+  main {
+    overflow: auto; min-width: 0; padding-block: 28px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: flex; flex-direction: column; align-items: center; gap: 24px;
   }
-  @media (max-width: 760px) {
-    .app { grid-template-columns: 1fr; }
-    aside { position: static; max-height: none; border-right: 0; border-bottom: 1px solid var(--line); }
-    main { padding: 16px; }
-    header { padding: 14px 16px; flex-direction: column; gap: 2px; }
+  .sheet { display: grid; gap: 6px; justify-items: center; max-width: 100%; }
+  .sheet small { color: var(--muted); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .page { background: #fff; box-shadow: 0 1px 2px rgba(20,25,40,.12), 0 8px 28px rgba(20,25,40,.14); display: block; max-width: 100%; height: auto; user-select: none; }
+  .page [data-id] { cursor: move; }
+  .page .handle { cursor: nwse-resize; }
+  .page.editing { touch-action: none; }
+
+  @media (max-width: 820px) {
+    html, body { height: auto; }
+    .app { grid-template-columns: 1fr; height: auto; }
+    aside { border-right: 0; border-bottom: 1px solid var(--line); }
+    .brand, .panel, .footer { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+    .tabs { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+    .panel { overflow: visible; }
+    select, input[type=text], input[type=number], input[type=month], input[type=range] { width: 150px; }
   }
+  @media (prefers-reduced-motion: no-preference) { .btn, .chips button { transition: background-color .15s, color .15s; } }
   @media print {
-    header, aside { display: none !important; }
-    body { background: #fff; }
-    .app { display: block; }
-    main { padding: 0; gap: 0; display: block; }
-    .page { box-shadow: none; page-break-after: always; break-after: page; max-width: none; }
-    .page:last-child { page-break-after: auto; break-after: auto; }
+    aside, .sheet small, .ui { display: none !important; }
+    html, body { height: auto; background: #fff; }
+    .app { display: block; height: auto; }
+    main { padding: 0; gap: 0; display: block; overflow: visible; }
+    .sheet { display: block; }
+    .page { box-shadow: none; break-after: page; max-width: none; }
+    .sheet:last-child .page { break-after: auto; }
   }
 </style>
 <style id="pageStyle"></style>
 </head>
 <body>
-<header>
-  <h1>속지 메이커</h1>
-  <p>나만의 다이어리·노트 속지를 만들어서 바로 인쇄하세요</p>
-</header>
 <div class="app">
   <aside>
-    <div class="group">
-      <h2>속지 종류</h2>
-      <div class="types" id="types"></div>
+    <div class="brand">
+      <h1>속지 메이커</h1>
+      <p>속지를 고르고, 펀칭 위치를 맞추고, 직접 꾸며서 PDF로 받으세요</p>
+    </div>
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="base" id="tab-base">속지</button>
+      <button role="tab" data-tab="punch" id="tab-punch">펀칭</button>
+      <button role="tab" data-tab="decor" id="tab-decor">꾸미기</button>
     </div>
 
-    <div class="group">
-      <h2>용지</h2>
-      <label class="row"><span>크기</span>
-        <select id="size">
-          <option value="A4">A4 (210×297)</option>
-          <option value="A5" selected>A5 (148×210)</option>
-          <option value="B5">B5 (182×257)</option>
-          <option value="A6">A6 (105×148)</option>
-          <option value="HB">HB 6공 (95×170)</option>
-          <option value="LETTER">Letter (216×279)</option>
-        </select>
-      </label>
-      <label class="row"><span>방향</span>
-        <select id="orient"><option value="p">세로</option><option value="l">가로</option></select>
-      </label>
-      <label class="row"><span>여백 <b id="marginV"></b>mm</span>
-        <input type="range" id="margin" min="5" max="25" value="12">
-      </label>
-      <label class="row"><span>바인딩 여백 <b id="bindV"></b>mm</span>
-        <input type="range" id="bind" min="0" max="20" value="0">
-      </label>
+    <div class="panel" id="panel-base">
+      <div class="group">
+        <h2>속지 종류</h2>
+        <div class="chips" id="types"></div>
+      </div>
+      <div class="group">
+        <h2>용지</h2>
+        <label class="row"><span>크기</span>
+          <select id="size">
+            <option value="A4">A4 (210×297)</option>
+            <option value="B5">B5 (182×257)</option>
+            <option value="A5">A5 (148×210)</option>
+            <option value="HB">바이블 (95×171)</option>
+            <option value="A6">A6 (105×148)</option>
+            <option value="M6">미니6 (80×126)</option>
+            <option value="LETTER">Letter (216×279)</option>
+          </select>
+        </label>
+        <label class="row"><span>방향</span>
+          <select id="orient"><option value="p">세로</option><option value="l">가로</option></select>
+        </label>
+        <label class="row"><span>여백 <b id="marginV"></b></span>
+          <input type="range" id="margin" min="4" max="25" step="1">
+        </label>
+      </div>
+      <div class="group">
+        <h2>선</h2>
+        <div class="row"><span>색</span><div class="swatches" id="lineSwatches"></div></div>
+        <label class="row"><span>직접 고르기</span><input type="color" id="color"></label>
+        <label class="row" id="spacingRow"><span>칸 간격 <b id="spacingV"></b></span>
+          <input type="range" id="spacing" min="4" max="12" step="0.5">
+        </label>
+        <label class="row"><span>굵기</span>
+          <select id="weight"><option value="0.15">얇게</option><option value="0.25">보통</option><option value="0.4">굵게</option></select>
+        </label>
+      </div>
+      <div class="group">
+        <h2>내용</h2>
+        <label class="row"><span>제목</span><input type="text" id="title" placeholder="예: My Diary"></label>
+        <label class="row"><span>날짜 칸</span>
+          <select id="dateField"><option value="1">표시</option><option value="0">숨김</option></select>
+        </label>
+        <label class="row" id="monthRow"><span>시작 연/월</span><input type="month" id="month"></label>
+        <label class="row" id="weekStartRow"><span>한 주 시작</span>
+          <select id="weekStart"><option value="1">월요일</option><option value="0">일요일</option></select>
+        </label>
+        <label class="row"><span>페이지 수</span><input type="number" id="count" min="1" max="60"></label>
+      </div>
     </div>
 
-    <div class="group">
-      <h2>스타일</h2>
-      <label class="row"><span>선 색상</span>
-        <div class="swatches" id="swatches"></div>
-      </label>
-      <label class="row"><span>직접 선택</span><input type="color" id="color" value="#b9b2a6"></label>
-      <label class="row" id="spacingRow"><span>칸 간격 <b id="spacingV"></b>mm</span>
-        <input type="range" id="spacing" min="4" max="12" step="0.5" value="7">
-      </label>
-      <label class="row"><span>선 굵기</span>
-        <select id="weight">
-          <option value="0.15">얇게</option>
-          <option value="0.25" selected>보통</option>
-          <option value="0.4">굵게</option>
-        </select>
-      </label>
+    <div class="panel" id="panel-punch" hidden>
+      <div class="group">
+        <h2>펀칭 규격</h2>
+        <div class="chips" id="punchTypes" style="grid-template-columns: repeat(2, 1fr)"></div>
+        <p class="hint" id="punchInfo"></p>
+      </div>
+      <div class="group">
+        <h2>위치</h2>
+        <div class="seg" id="punchSide">
+          <button data-v="left">왼쪽 (옆으로 넘김)</button>
+          <button data-v="top">위쪽 (위로 넘김)</button>
+        </div>
+        <label class="row"><span>양면 인쇄 (짝수 쪽은 반대편)</span><input type="checkbox" id="duplex"></label>
+      </div>
+      <div class="group">
+        <h2>표시 방법</h2>
+        <div class="seg" id="punchStyle">
+          <button data-v="guide">점선 가이드</button>
+          <button data-v="fill">회색 원</button>
+          <button data-v="none">여백만</button>
+        </div>
+        <p class="hint">구멍 자리만큼 안쪽 여백이 자동으로 넓어져서 글씨나 칸이 구멍에 걸리지 않아요. 바인더마다 규격이 조금씩 다를 수 있으니 처음엔 한 장만 뽑아서 구멍을 맞춰 보세요.</p>
+      </div>
     </div>
 
-    <div class="group">
-      <h2>내용</h2>
-      <label class="row"><span>제목</span><input type="text" id="title" placeholder="예: My Diary"></label>
-      <label class="row"><span>날짜 칸</span>
-        <select id="dateField"><option value="1">표시</option><option value="0">숨김</option></select>
-      </label>
-      <label class="row" id="monthRow"><span>연/월</span><input type="month" id="month"></label>
-      <label class="row" id="weekStartRow"><span>한 주 시작</span>
-        <select id="weekStart"><option value="1">월요일</option><option value="0">일요일</option></select>
-      </label>
-      <label class="row"><span>페이지 수</span><input type="number" id="count" min="1" max="60" value="1"></label>
+    <div class="panel" id="panel-decor" hidden>
+      <div class="card" id="selPanel" hidden>
+        <h2 class="group" style="margin:0"><span style="font-size:11.5px;letter-spacing:.06em;font-weight:600">선택한 꾸미기</span></h2>
+        <textarea id="selText" aria-label="글자 내용"></textarea>
+        <label class="row" id="selFontRow"><span>글꼴</span><select id="selFont"></select></label>
+        <label class="row" id="selColorRow"><span>색</span><input type="color" id="selColor"></label>
+        <label class="row" id="selColor2Row"><span>보조 색</span><input type="color" id="selColor2"></label>
+        <label class="row"><span>회전 <b id="selRotV"></b></span><input type="range" id="selRot" min="-180" max="180" step="1"></label>
+        <label class="row"><span>투명도 <b id="selOpV"></b></span><input type="range" id="selOp" min="0.1" max="1" step="0.05"></label>
+        <label class="row"><span>적용 범위</span>
+          <select id="selScope"><option value="all">모든 페이지</option><option value="one">이 페이지만</option></select>
+        </label>
+        <div class="btnrow">
+          <button class="btn ghost small" id="selFront">맨 앞으로</button>
+          <button class="btn ghost small" id="selBack">맨 뒤로</button>
+          <button class="btn ghost small" id="selDup">복제</button>
+          <button class="btn danger small" id="selDel">삭제</button>
+        </div>
+        <p class="hint">드래그해서 옮기고, 오른쪽 아래 동그라미를 끌어서 크기를 바꿔요. 방향키로 0.5mm씩 움직일 수 있어요.</p>
+      </div>
+      <div class="group">
+        <h2>종이 색</h2>
+        <div class="swatches" id="paperSwatches"></div>
+      </div>
+      <div class="group">
+        <h2>글자</h2>
+        <div class="btnrow">
+          <button class="btn ghost small" id="addText">글자 추가</button>
+          <label class="btn ghost small upload">사진 올리기<input type="file" id="addImage" accept="image/*"></label>
+        </div>
+      </div>
+      <div class="group">
+        <h2>스티커</h2>
+        <div class="stickers" id="shapeList"></div>
+      </div>
+      <div class="group">
+        <h2>마스킹 테이프</h2>
+        <div class="stickers tapes" id="tapeList"></div>
+      </div>
+      <div class="group">
+        <h2>이모지</h2>
+        <div class="stickers" id="emojiList"></div>
+      </div>
+      <button class="btn danger small" id="clearAll">꾸미기 모두 지우기</button>
     </div>
 
-    <div class="actions">
-      <button class="btn" id="print">인쇄 / PDF 저장</button>
+    <div class="footer">
+      <div class="btnrow">
+        <button class="btn" id="pdf">PDF로 받기</button>
+        <button class="btn ghost" id="print" hidden>인쇄</button>
+      </div>
+      <p class="hint" id="status" role="status">PDF는 실제 크기(mm)로 만들어져요. 인쇄할 때 배율을 100%로 두세요.</p>
     </div>
-    <p class="hint">인쇄 창에서 <b>용지 크기를 선택한 크기와 같게</b>, 배율은 <b>100% (실제 크기)</b>, 머리글·바닥글은 끄면 정확하게 나옵니다. "PDF로 저장"을 고르면 파일로 받을 수 있어요.</p>
   </aside>
   <main id="preview"></main>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-const SIZES = { A4:[210,297], A5:[148,210], B5:[182,257], A6:[105,148], HB:[95,170], LETTER:[215.9,279.4] };
+// ======================= data =======================
+const SIZES = { A4:[210,297], B5:[182,257], A5:[148,210], HB:[95,171], A6:[105,148], M6:[80,126], LETTER:[215.9,279.4] };
 const TYPES = [
-  ['lined','줄노트'], ['grid','모눈'], ['dot','도트'],
-  ['blank','무지'], ['todo','투두 리스트'], ['daily','데일리'],
-  ['weekly','위클리'], ['monthly','먼슬리'], ['habit','해빗 트래커'],
-  ['cornell','코넬 노트'], ['reading','독서 기록'], ['budget','가계부'],
+  ['lined','줄노트'], ['grid','모눈'], ['dot','도트'], ['blank','무지'], ['todo','투두 리스트'], ['daily','데일리'],
+  ['weekly','위클리'], ['monthly','먼슬리'], ['habit','해빗 트래커'], ['cornell','코넬 노트'], ['reading','독서 기록'], ['budget','가계부'],
 ];
-const COLORS = ['#b9b2a6','#9fb4c7','#a9c2a0','#e0a8a8','#c7b3dd','#555555'];
+const LINE_COLORS = ['#b9b2a6','#9fb4c7','#a9c2a0','#e0a8a8','#c7b3dd','#555555'];
+const PAPERS = ['#ffffff','#fbf7ee','#fdf0f1','#eef7f2','#eef4fb','#f4f0fa','#f3f3f1'];
 const DAYS_KO = ['일','월','화','수','목','금','토'];
+const FONTS = [['Gowun Dodum','고운돋움'],['Nanum Pen Script','나눔손글씨 펜'],['Gaegu','개구'],['Jua','주아'],['Gowun Batang','고운바탕'],['Hi Melody','하이멜로디']];
+const EMOJI = ['🌷','🌸','🌼','🍀','☁️','🌙','⭐','✨','🎀','💌','📌','📎','✏️','📚','☕','🍰','🍓','🍋','🐻','🐰','🐱','🐶','🦋','🎵'];
 
-const $ = id => document.getElementById(id);
-const state = { type: 'lined' };
+// Hole positions are offsets (mm) from the centre of the bound edge.
+const PUNCH = {
+  none: { name: '없음', info: '구멍 표시 없이 인쇄해요.' },
+  p2:   { name: '2공', d: 6, edge: 12, off: () => [-40, 40], info: '구멍 지름 6mm, 간격 80mm, 가장자리에서 12mm. 일반 2공 펀치와 2공 바인더용이에요.' },
+  p4:   { name: '4공', d: 6, edge: 12, off: () => [-120, -40, 40, 120], info: '구멍 간격 80mm 4개. A4·B5처럼 긴 종이에 맞아요.' },
+  r6a5: { name: '6공 A5', d: 5.5, edge: 7, off: () => [-73, -54, -35, 35, 54, 73], info: 'A5 6공 다이어리 규격이에요. 구멍 간격 19mm, 가운데 간격 70mm.' },
+  r6hb: { name: '6공 바이블', d: 5.5, edge: 7, off: () => [-63.5, -44.5, -25.5, 25.5, 44.5, 63.5], info: '바이블(HB, 95×171) 6공 규격이에요. 구멍 간격 19mm, 가운데 간격 51mm.' },
+  r6m6: { name: '6공 미니6', d: 5, edge: 6.5, off: () => [-50.5, -31.5, -12.5, 12.5, 31.5, 50.5], info: '미니6(80×126) 다이어리용이에요. 구멍 간격 19mm, 가운데 간격 25mm.' },
+  multi:{ name: '다공 루즈리프', d: 6, edge: 6.5, off: L => {
+            const n = ({297:30, 257:26, 210:20})[Math.round(L)] || Math.max(2, Math.floor((L - 19) / 9.5) + 1);
+            return Array.from({ length: n }, (_, i) => (i - (n - 1) / 2) * 9.5);
+          }, info: '9.5mm 간격 루즈리프 규격이에요. A4 30공, B5 26공, A5 20공.' },
+};
 
-// ---------- UI setup ----------
-TYPES.forEach(([k, label]) => {
-  const b = document.createElement('button');
-  b.textContent = label; b.dataset.k = k;
-  b.onclick = () => { state.type = k; render(); };
-  $('types').appendChild(b);
-});
-COLORS.forEach(c => {
-  const b = document.createElement('button');
-  b.style.background = c; b.dataset.c = c; b.type = 'button';
-  b.onclick = e => { e.preventDefault(); $('color').value = c; render(); };
-  $('swatches').appendChild(b);
-});
+const sc = (w, h, inner) => `<g transform="scale(${(w/100).toFixed(4)} ${(h/100).toFixed(4)})">${inner}</g>`;
+function starD(n, r1, r2, cx = 50, cy = 52) {
+  let d = '';
+  for (let i = 0; i < n * 2; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / n, r = i % 2 ? r2 : r1;
+    d += (i ? 'L' : 'M') + (cx + r * Math.cos(a)).toFixed(1) + ' ' + (cy + r * Math.sin(a)).toFixed(1);
+  }
+  return d + 'Z';
+}
+function tapeOutline(w, h) {
+  const t = 2, depth = 1, n = Math.max(2, Math.round(h / t));
+  const step = h / n;
+  let d = `M${depth} 0 L${w - depth} 0`;
+  for (let i = 0; i < n; i++) d += ` L${w - (i % 2 ? depth : 0)} ${(i + 0.5) * step} L${w - depth} ${(i + 1) * step}`;
+  d += ` L${depth} ${h}`;
+  for (let i = n - 1; i >= 0; i--) d += ` L${i % 2 ? depth : 0} ${(i + 0.5) * step} L${depth} ${i * step}`;
+  return d + 'Z';
+}
+const SHAPES = {
+  heart:   { c: '#f28b9b', draw: (c, c2, w, h) => sc(w, h, `<path d="M50 90C22 70 4 52 4 32C4 16 16 6 30 6C40 6 46 12 50 20C54 12 60 6 70 6C84 6 96 16 96 32C96 52 78 70 50 90Z" fill="${c}"/>`) },
+  star:    { c: '#f5c84c', draw: (c, c2, w, h) => sc(w, h, `<path d="${starD(5, 48, 20)}" fill="${c}"/>`) },
+  sparkle: { c: '#f5c84c', draw: (c, c2, w, h) => sc(w, h, `<path d="M50 2C54 36 64 46 98 50C64 54 54 64 50 98C46 64 36 54 2 50C36 46 46 36 50 2Z" fill="${c}"/>`) },
+  flower:  { c: '#f4a7c0', c2: '#f7d26a', draw: (c, c2, w, h) => sc(w, h,
+      [0,1,2,3,4].map(i => { const a = -Math.PI/2 + i*2*Math.PI/5; return `<circle cx="${(50+27*Math.cos(a)).toFixed(1)}" cy="${(50+27*Math.sin(a)).toFixed(1)}" r="22" fill="${c}"/>`; }).join('')
+      + `<circle cx="50" cy="50" r="15" fill="${c2}"/>`) },
+  cloud:   { c: '#cfe1f3', draw: (c, c2, w, h) => sc(w, h, `<path d="M25 78C10 78 2 67 4 55C6 44 16 38 26 40C28 23 42 13 57 16C69 18 77 27 79 37C91 37 98 46 97 57C96 69 87 78 75 78Z" fill="${c}"/>`) },
+  moon:    { c: '#f5d46b', draw: (c, c2, w, h) => sc(w, h, `<path d="M62 6C38 10 22 30 22 52C22 76 42 94 66 94C78 94 88 90 95 82C88 85 80 86 72 84C50 80 36 62 38 40C40 24 50 12 62 6Z" fill="${c}"/>`) },
+  leaf:    { c: '#97c393', c2: '#ffffff', draw: (c, c2, w, h) => sc(w, h, `<path d="M8 92C8 42 40 10 94 8C92 60 60 92 8 92Z" fill="${c}"/><path d="M14 86C36 62 58 40 84 18" stroke="${c2}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`) },
+  ribbon:  { c: '#e8798f', draw: (c, c2, w, h) => sc(w, h, `<path d="M50 46L10 24C4 22 2 26 2 30L2 62C2 66 4 70 10 68Z" fill="${c}"/><path d="M50 46L90 24C96 22 98 26 98 30L98 62C98 66 96 70 90 68Z" fill="${c}"/><path d="M46 50L30 96L40 92L46 100L52 54Z" fill="${c}"/><path d="M54 50L70 96L60 92L54 100L48 54Z" fill="${c}"/><circle cx="50" cy="47" r="10" fill="${c}"/><circle cx="50" cy="47" r="10" fill="#000" fill-opacity="0.12"/>`) },
+  bubble:  { c: '#ffffff', c2: '#555555', draw: (c, c2, w, h) => sc(w, h, `<path d="M14 6L86 6C92 6 96 10 96 16L96 62C96 68 92 72 86 72L40 72L22 92L26 72L14 72C8 72 4 68 4 62L4 16C4 10 8 6 14 6Z" fill="${c}" stroke="${c2}" stroke-width="2.5"/>`) },
+  frame:   { c: '#9fb4c7', draw: (c, c2, w, h) => sc(w, h, `<circle cx="50" cy="50" r="46" fill="none" stroke="${c}" stroke-width="3"/><circle cx="50" cy="50" r="40" fill="none" stroke="${c}" stroke-width="1.5" stroke-dasharray="3 3"/>`) },
+  label:   { c: '#f3e3b3', free: true, w: 40, h: 12, draw: (c, c2, w, h) => `<rect x="0" y="0" width="${w}" height="${h}" rx="1.5" fill="${c}"/><circle cx="${Math.min(4, h*0.3)}" cy="${h/2}" r="${Math.min(1.2, h*0.12)}" fill="#ffffff"/>` },
+  check:   { c: '#2f4fc4', draw: (c, c2, w, h) => sc(w, h, `<path d="M10 52L38 80L90 20" stroke="${c}" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`) },
+};
+const TAPES = {
+  tapeSolid:  { c: '#f6c1c8', c2: '#ffffff', draw: (c, c2, w, h) => `<path d="${tapeOutline(w, h)}" fill="${c}" fill-opacity="0.85"/>` },
+  tapeStripe: { c: '#a8c8e8', c2: '#ffffff', draw: (c, c2, w, h) => {
+      let o = `<path d="${tapeOutline(w, h)}" fill="${c}" fill-opacity="0.85"/>`;
+      for (let x = 2.5; x < w - 3; x += 4) o += `<rect x="${x.toFixed(2)}" y="0" width="2" height="${h}" fill="${c2}" fill-opacity="0.55"/>`;
+      return o; } },
+  tapeDot:    { c: '#bcdcb4', c2: '#ffffff', draw: (c, c2, w, h) => {
+      let o = `<path d="${tapeOutline(w, h)}" fill="${c}" fill-opacity="0.85"/>`;
+      let r = 0;
+      for (let y = 2; y < h - 1; y += 3.2, r++) for (let x = 3 + (r % 2) * 1.8; x < w - 3; x += 3.6) o += `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="0.75" fill="${c2}"/>`;
+      return o; } },
+  tapeCheck:  { c: '#f3d28a', c2: '#ffffff', draw: (c, c2, w, h) => {
+      let o = `<path d="${tapeOutline(w, h)}" fill="${c}" fill-opacity="0.85"/>`;
+      for (let x = 2; x < w - 3; x += 5) o += `<rect x="${x.toFixed(2)}" y="0" width="2.5" height="${h}" fill="${c2}" fill-opacity="0.35"/>`;
+      for (let y = 1; y < h - 1; y += 5) o += `<rect x="1" y="${y.toFixed(2)}" width="${w - 2}" height="2.5" fill="${c2}" fill-opacity="0.35"/>`;
+      return o; } },
+  tapeKraft:  { c: '#d9b98c', c2: '#7a5c3a', draw: (c, c2, w, h) => {
+      let o = `<path d="${tapeOutline(w, h)}" fill="${c}" fill-opacity="0.9"/>`;
+      o += `<line x1="3" y1="${h*0.25}" x2="${w-3}" y2="${h*0.25}" stroke="${c2}" stroke-width="0.25" stroke-dasharray="1 1"/>`;
+      o += `<line x1="3" y1="${h*0.75}" x2="${w-3}" y2="${h*0.75}" stroke="${c2}" stroke-width="0.25" stroke-dasharray="1 1"/>`;
+      return o; } },
+  tapeLace:   { c: '#ffffff', c2: '#d8a7b5', draw: (c, c2, w, h) => {
+      let o = `<path d="${tapeOutline(w, h)}" fill="${c}" fill-opacity="0.9" stroke="${c2}" stroke-width="0.25"/>`;
+      for (let x = 3; x < w - 3; x += 4) o += `<circle cx="${x+1}" cy="${h/2}" r="1.3" fill="none" stroke="${c2}" stroke-width="0.35"/>`;
+      return o; } },
+};
+for (const k in TAPES) Object.assign(TAPES[k], { free: true, w: 56, h: 14 });
+const ALL_SHAPES = { ...SHAPES, ...TAPES };
+
+// ======================= state =======================
+const STORE = 'sokji-maker-v2';
 const now = new Date();
-$('month').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-document.querySelectorAll('aside input, aside select').forEach(el => el.addEventListener('input', render));
-$('print').onclick = () => window.print();
+const DEFAULTS = {
+  type: 'weekly', tab: 'base', size: 'A5', orient: 'p', margin: 10, color: '#b9b2a6', spacing: 6, weight: '0.25',
+  title: '', dateField: '1', month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`, weekStart: '1', count: 2,
+  paper: '#ffffff', punch: 'r6a5', punchSide: 'left', punchStyle: 'guide', duplex: true,
+};
+function exampleItems() {
+  return [
+    { id: 'ex1', kind: 'shape', shape: 'tapeStripe', x: 88, y: 3, w: 42, h: 11, rot: 4, op: 1, c: '#a8c8e8', c2: '#ffffff', page: 'all' },
+    { id: 'ex2', kind: 'emoji', text: '🌷', x: 120, y: 188, w: 11, h: 11, rot: 0, op: 1, page: 'all' },
+  ];
+}
+let st;
+try { st = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (e) { st = null; }
+st = Object.assign({}, DEFAULTS, st || {});
+if (!Array.isArray(st.items)) st.items = exampleItems();
+let sel = null, selPage = 0, drag = null;
+let saveTimer = null;
+function save() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { try { localStorage.setItem(STORE, JSON.stringify(st)); } catch (e) { /* storage full or blocked */ } }, 300);
+}
+const $ = id => document.getElementById(id);
+const uid = () => Math.random().toString(36).slice(2, 9);
 
-// ---------- SVG helpers ----------
-let S; // current style context
-function line(x1,y1,x2,y2,opt={}) {
-  const w = opt.w ?? S.w, c = opt.c ?? S.c, dash = opt.dash ? ` stroke-dasharray="${opt.dash}"` : '';
-  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}"${dash} stroke-linecap="round"/>`;
+// ======================= SVG helpers =======================
+let S;
+const esc = s => String(s).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+function line(x1, y1, x2, y2, o = {}) {
+  const dash = o.dash ? ` stroke-dasharray="${o.dash}"` : '';
+  return `<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}" stroke="${o.c ?? S.c}" stroke-width="${o.w ?? S.w}"${dash} stroke-linecap="round"/>`;
 }
-function rect(x,y,w,h,opt={}) {
-  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${opt.r ?? 0}" fill="${opt.fill ?? 'none'}" stroke="${opt.c ?? S.c}" stroke-width="${opt.w ?? S.w}"/>`;
+function rect(x, y, w, h, o = {}) {
+  return `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${w.toFixed(2)}" height="${h.toFixed(2)}" rx="${o.r ?? 0}" fill="${o.fill ?? 'none'}" stroke="${o.c ?? S.c}" stroke-width="${o.w ?? S.w}"/>`;
 }
-function text(x,y,t,opt={}) {
-  const esc = String(t).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
-  return `<text x="${x}" y="${y}" font-size="${opt.size ?? 3}" fill="${opt.fill ?? S.text}" font-family="Gowun Dodum, Noto Sans KR, sans-serif" text-anchor="${opt.anchor ?? 'start'}" font-weight="${opt.bold ? 700 : 400}">${esc}</text>`;
+function text(x, y, t, o = {}) {
+  return `<text x="${x.toFixed(2)}" y="${y.toFixed(2)}" font-size="${o.size ?? 3}" fill="${o.fill ?? S.text}" font-family="Gowun Dodum, sans-serif" text-anchor="${o.anchor ?? 'start'}" font-weight="${o.bold ? 700 : 400}">${esc(t)}</text>`;
 }
-function hLines(x, y0, w, y1, sp, opt) {
-  let o = ''; for (let y = y0; y <= y1 + 0.01; y += sp) o += line(x, y, x + w, y, opt); return o;
-}
+function hLines(x, y0, w, y1, sp, o) { let s = ''; for (let y = y0; y <= y1 + 0.01; y += sp) s += line(x, y, x + w, y, o); return s; }
 function gridPat(x, y, w, h, sp) {
-  let o = '';
-  const cols = Math.floor(w / sp), rows = Math.floor(h / sp);
+  let o = ''; const cols = Math.floor(w / sp), rows = Math.floor(h / sp);
   const gx = x + (w - cols * sp) / 2, gy = y + (h - rows * sp) / 2;
-  for (let i = 0; i <= cols; i++) o += line(gx + i*sp, gy, gx + i*sp, gy + rows*sp, { w: S.w * 0.8 });
-  for (let j = 0; j <= rows; j++) o += line(gx, gy + j*sp, gx + cols*sp, gy + j*sp, { w: S.w * 0.8 });
+  for (let i = 0; i <= cols; i++) o += line(gx + i * sp, gy, gx + i * sp, gy + rows * sp, { w: S.w * 0.8 });
+  for (let j = 0; j <= rows; j++) o += line(gx, gy + j * sp, gx + cols * sp, gy + j * sp, { w: S.w * 0.8 });
   return o;
 }
 function dotPat(x, y, w, h, sp) {
-  let o = '';
-  const cols = Math.floor(w / sp), rows = Math.floor(h / sp);
-  const gx = x + (w - cols * sp) / 2, gy = y + (h - rows * sp) / 2;
-  const r = Math.max(0.25, S.w * 1.3);
-  for (let i = 0; i <= cols; i++) for (let j = 0; j <= rows; j++)
-    o += `<circle cx="${(gx+i*sp).toFixed(2)}" cy="${(gy+j*sp).toFixed(2)}" r="${r}" fill="${S.c}"/>`;
+  let o = ''; const cols = Math.floor(w / sp), rows = Math.floor(h / sp);
+  const gx = x + (w - cols * sp) / 2, gy = y + (h - rows * sp) / 2, r = Math.max(0.25, S.w * 1.3);
+  for (let i = 0; i <= cols; i++) for (let j = 0; j <= rows; j++) o += `<circle cx="${(gx + i * sp).toFixed(2)}" cy="${(gy + j * sp).toFixed(2)}" r="${r}" fill="${S.c}"/>`;
   return o;
 }
-function checkbox(x, y, s) { return rect(x, y, s, s, { r: 0.6 }); }
-
-// Header: title + date. Returns {svg, y} where y = content start
-function header(b, title, pageNo) {
-  let o = '', y = b.y;
-  const t = $('title').value.trim() || title;
-  const showDate = $('dateField').value === '1';
+const checkbox = (x, y, s) => rect(x, y, s, s, { r: 0.6 });
+function starPath(cx, cy, r) {
+  let p = '';
+  for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; p += (i ? 'L' : 'M') + (cx + rr * Math.cos(a)).toFixed(2) + ' ' + (cy + rr * Math.sin(a)).toFixed(2); }
+  return `<path d="${p}Z" fill="none" stroke="${S.c}" stroke-width="${S.w}"/>`;
+}
+function header(b, title) {
+  let o = ''; const y = b.y;
+  const t = st.title.trim() || title, showDate = st.dateField === '1';
   if (!t && !showDate) return { svg: '', y };
   o += text(b.x, y + 6, t, { size: 5.2, bold: true });
   if (showDate) {
@@ -245,111 +449,84 @@ function header(b, title, pageNo) {
   return { svg: o, y: y + 15 };
 }
 
-// ---------- Page renderers: each returns SVG content inside box b ----------
+// ======================= insert templates =======================
 const R = {
   lined(b) { const h = header(b, ''); return h.svg + hLines(b.x, h.y + S.sp, b.w, b.y + b.h, S.sp); },
-  grid(b)  { const h = header(b, ''); return h.svg + gridPat(b.x, h.y, b.w, b.y + b.h - h.y, S.sp); },
-  dot(b)   { const h = header(b, ''); return h.svg + dotPat(b.x, h.y, b.w, b.y + b.h - h.y, S.sp); },
+  grid(b) { const h = header(b, ''); return h.svg + gridPat(b.x, h.y, b.w, b.y + b.h - h.y, S.sp); },
+  dot(b) { const h = header(b, ''); return h.svg + dotPat(b.x, h.y, b.w, b.y + b.h - h.y, S.sp); },
   blank(b) { return header(b, '').svg; },
-
   todo(b) {
     const h = header(b, 'TO DO LIST'); let o = h.svg;
     const sp = Math.max(S.sp, 7), cb = Math.min(3.6, sp * 0.5);
-    for (let y = h.y + sp; y <= b.y + b.h + 0.01; y += sp) {
-      o += checkbox(b.x + 1, y - sp/2 - cb/2, cb);
-      o += line(b.x + cb + 4, y, b.x + b.w, y);
-    }
+    for (let y = h.y + sp; y <= b.y + b.h + 0.01; y += sp) { o += checkbox(b.x + 1, y - sp / 2 - cb / 2, cb); o += line(b.x + cb + 4, y, b.x + b.w, y); }
     return o;
   },
-
   daily(b) {
     const h = header(b, 'DAILY'); let o = h.svg;
     const top = h.y, colW = b.w * 0.42, gap = 5;
-    // Left: timeline 06~24
     const hours = []; for (let i = 6; i <= 24; i++) hours.push(i);
     const slot = (b.y + b.h - top - 6) / hours.length;
     o += text(b.x, top + 3, 'SCHEDULE', { size: 2.8, bold: true, fill: S.c });
     hours.forEach((hr, i) => {
       const y = top + 6 + i * slot;
-      o += text(b.x, y + slot * 0.62, String(hr % 24).padStart(2,'0'), { size: 2.4, fill: S.c });
+      o += text(b.x, y + slot * 0.62, String(hr % 24).padStart(2, '0'), { size: 2.4, fill: S.c });
       o += line(b.x + 6, y + slot, b.x + colW, y + slot, { w: S.w * 0.8 });
-      o += line(b.x + 6 + (colW - 6)/2, y + 1, b.x + 6 + (colW - 6)/2, y + slot - 1, { w: S.w * 0.6, dash: '0.6 0.8' });
+      o += line(b.x + 6 + (colW - 6) / 2, y + 1, b.x + 6 + (colW - 6) / 2, y + slot - 1, { w: S.w * 0.6, dash: '0.6 0.8' });
     });
-    // Right: to do + memo
-    const rx = b.x + colW + gap, rw = b.w - colW - gap;
-    const mid = top + (b.y + b.h - top) * 0.55;
+    const rx = b.x + colW + gap, rw = b.w - colW - gap, mid = top + (b.y + b.h - top) * 0.55;
     o += text(rx, top + 3, 'TO DO', { size: 2.8, bold: true, fill: S.c });
-    for (let y = top + 6 + S.sp; y <= mid - 2; y += S.sp) {
-      o += checkbox(rx, y - S.sp/2 - 1.5, 3); o += line(rx + 5, y, rx + rw, y);
-    }
+    for (let y = top + 6 + S.sp; y <= mid - 2; y += S.sp) { o += checkbox(rx, y - S.sp / 2 - 1.5, 3); o += line(rx + 5, y, rx + rw, y); }
     o += text(rx, mid + 4, 'MEMO', { size: 2.8, bold: true, fill: S.c });
     o += dotPat(rx, mid + 6, rw, b.y + b.h - mid - 6, 5);
     return o;
   },
-
   weekly(b) {
     const h = header(b, 'WEEKLY'); let o = h.svg;
-    const ws = +$('weekStart').value;
-    const days = [0,1,2,3,4,5,6].map(i => DAYS_KO[(i + ws) % 7]);
-    const cells = [...days, 'MEMO'];
-    const cols = 2, rows = 4, gap = 3;
-    const cw = (b.w - gap) / cols, ch = (b.y + b.h - h.y - gap * (rows - 1)) / rows;
+    const ws = +st.weekStart, cells = [0, 1, 2, 3, 4, 5, 6].map(i => DAYS_KO[(i + ws) % 7]).concat('MEMO');
+    const cols = 2, rows = 4, gap = 3, cw = (b.w - gap) / cols, ch = (b.y + b.h - h.y - gap * (rows - 1)) / rows;
     cells.forEach((d, i) => {
-      const c = i % cols, r = Math.floor(i / cols);
-      const x = b.x + c * (cw + gap), y = h.y + r * (ch + gap);
+      const x = b.x + (i % cols) * (cw + gap), y = h.y + Math.floor(i / cols) * (ch + gap);
       o += rect(x, y, cw, ch, { r: 1.5 });
-      const isSun = d === '일', isSat = d === '토';
-      o += text(x + 3, y + 5, d, { size: 3.2, bold: true, fill: isSun ? '#d07070' : isSat ? '#6f8fc0' : S.text });
-      if (d !== 'MEMO') { o += text(x + 9, y + 5, '/', { size: 2.8, fill: S.c }); }
+      o += text(x + 3, y + 5, d, { size: 3.2, bold: true, fill: d === '일' ? '#d07070' : d === '토' ? '#6f8fc0' : S.text });
+      if (d !== 'MEMO') o += text(x + 9, y + 5, '/', { size: 2.8, fill: S.c });
       o += line(x, y + 7.5, x + cw, y + 7.5, { w: S.w * 0.8 });
       for (let ly = y + 7.5 + S.sp; ly < y + ch - 1; ly += S.sp) o += line(x + 2, ly, x + cw - 2, ly, { w: S.w * 0.6, dash: d === 'MEMO' ? '0.6 0.8' : null });
     });
     return o;
   },
-
   monthly(b, pageIdx) {
-    const [yy, mm] = ($('month').value || '').split('-').map(Number);
+    const [yy, mm] = (st.month || '').split('-').map(Number);
     const base = yy ? new Date(yy, mm - 1 + pageIdx, 1) : new Date(now.getFullYear(), now.getMonth() + pageIdx, 1);
-    const Y = base.getFullYear(), M = base.getMonth();
-    const ws = +$('weekStart').value;
-    let o = '';
-    const userTitle = $('title').value.trim();
-    o += text(b.x, b.y + 9, String(M + 1).padStart(2, '0'), { size: 11, bold: true });
+    const Y = base.getFullYear(), M = base.getMonth(), ws = +st.weekStart;
+    let o = text(b.x, b.y + 9, String(M + 1).padStart(2, '0'), { size: 11, bold: true });
     o += text(b.x + 17, b.y + 9, `${Y}  ${['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'][M]}`, { size: 3.2, fill: S.c });
-    if (userTitle) o += text(b.x + b.w, b.y + 9, userTitle, { size: 3.6, anchor: 'end', bold: true });
+    if (st.title.trim()) o += text(b.x + b.w, b.y + 9, st.title.trim(), { size: 3.6, anchor: 'end', bold: true });
     const top = b.y + 15, cw = b.w / 7;
     for (let i = 0; i < 7; i++) {
       const d = (i + ws) % 7;
       o += text(b.x + cw * i + cw / 2, top + 3.5, DAYS_KO[d], { size: 2.8, anchor: 'middle', bold: true, fill: d === 0 ? '#d07070' : d === 6 ? '#6f8fc0' : S.text });
     }
-    const first = (new Date(Y, M, 1).getDay() - ws + 7) % 7;
-    const dim = new Date(Y, M + 1, 0).getDate();
-    const weeks = Math.ceil((first + dim) / 7);
+    const first = (new Date(Y, M, 1).getDay() - ws + 7) % 7, dim = new Date(Y, M + 1, 0).getDate(), weeks = Math.ceil((first + dim) / 7);
     const gy = top + 6, ch = (b.y + b.h - gy) / weeks;
     o += line(b.x, gy, b.x + b.w, gy, { w: S.w * 2 });
     for (let r = 1; r <= weeks; r++) o += line(b.x, gy + r * ch, b.x + b.w, gy + r * ch);
     for (let c = 1; c < 7; c++) o += line(b.x + c * cw, gy, b.x + c * cw, gy + weeks * ch, { w: S.w * 0.7 });
     for (let d = 1; d <= dim; d++) {
-      const idx = first + d - 1, c = idx % 7, r = Math.floor(idx / 7);
-      const wd = (c + ws) % 7;
+      const idx = first + d - 1, c = idx % 7, r = Math.floor(idx / 7), wd = (c + ws) % 7;
       o += text(b.x + c * cw + 1.5, gy + r * ch + 4, d, { size: 2.8, fill: wd === 0 ? '#d07070' : wd === 6 ? '#6f8fc0' : S.text });
     }
     return o;
   },
-
   habit(b) {
     const h = header(b, 'HABIT TRACKER'); let o = h.svg;
-    const nameW = Math.min(32, b.w * 0.28), days = 31;
-    const cw = (b.w - nameW) / days, top = h.y;
-    const rows = Math.max(6, Math.floor((b.y + b.h - top - 6) / Math.max(cw * 1.6, 6)));
-    const rh = (b.y + b.h - top - 6) / rows;
+    const nameW = Math.min(32, b.w * 0.28), days = 31, cw = (b.w - nameW) / days, top = h.y;
+    const rows = Math.max(6, Math.floor((b.y + b.h - top - 6) / Math.max(cw * 1.6, 6))), rh = (b.y + b.h - top - 6) / rows;
     o += text(b.x, top + 4, 'HABIT', { size: 2.6, bold: true, fill: S.c });
     for (let d = 1; d <= days; d++) o += text(b.x + nameW + cw * (d - 0.5), top + 4, d, { size: Math.min(2.2, cw * 0.8), anchor: 'middle', fill: S.c });
     for (let r = 0; r <= rows; r++) o += line(b.x, top + 6 + r * rh, b.x + b.w, top + 6 + r * rh, { w: r === 0 ? S.w * 2 : S.w });
     for (let d = 0; d <= days; d++) o += line(b.x + nameW + cw * d, top + 6, b.x + nameW + cw * d, top + 6 + rows * rh, { w: S.w * 0.6 });
     return o;
   },
-
   cornell(b) {
     const h = header(b, ''); let o = h.svg;
     const cue = b.w * 0.3, sumH = (b.y + b.h - h.y) * 0.2, sumY = b.y + b.h - sumH;
@@ -362,15 +539,9 @@ const R = {
     o += hLines(b.x, sumY + 6 + S.sp, b.w, b.y + b.h, S.sp, { dash: '0.6 0.8' });
     return o;
   },
-
   reading(b) {
-    const h = header(b, 'READING LOG'); let o = h.svg;
-    const fields = ['제목', '저자', '출판사', '읽은 기간'];
-    let y = h.y;
-    fields.forEach(f => {
-      o += text(b.x, y + 5, f, { size: 2.8, fill: S.c });
-      o += line(b.x + 16, y + 6, b.x + b.w, y + 6); y += 9;
-    });
+    const h = header(b, 'READING LOG'); let o = h.svg, y = h.y;
+    ['제목', '저자', '출판사', '읽은 기간'].forEach(f => { o += text(b.x, y + 5, f, { size: 2.8, fill: S.c }); o += line(b.x + 16, y + 6, b.x + b.w, y + 6); y += 9; });
     o += text(b.x, y + 5, '별점', { size: 2.8, fill: S.c });
     for (let i = 0; i < 5; i++) o += starPath(b.x + 19 + i * 6, y + 3.8, 2.3);
     y += 11;
@@ -382,20 +553,18 @@ const R = {
     o += hLines(b.x, y + 2 + S.sp, b.w, b.y + b.h, S.sp);
     return o;
   },
-
   budget(b) {
     const h = header(b, 'BUDGET'); let o = h.svg;
     const cols = [['날짜', .14], ['내역', .40], ['수입', .15], ['지출', .15], ['잔액', .16]];
-    const top = h.y, rh = Math.max(S.sp, 6.5);
-    let x = b.x;
-    o += rect(b.x, top, b.w, rh, { fill: S.c + '33', w: S.w });
+    const top = h.y, rh = Math.max(S.sp, 6.5); let x = b.x;
+    o += rect(b.x, top, b.w, rh, { fill: S.c + '33' });
+    const end = b.y + b.h - rh * 2;
     cols.forEach(([n, r], i) => {
       const w = b.w * r;
       o += text(x + w / 2, top + rh * 0.68, n, { size: 2.6, anchor: 'middle', bold: true });
-      if (i > 0) o += line(x, top, x, b.y + b.h - rh * 2, { w: S.w * 0.7 });
+      if (i > 0) o += line(x, top, x, end, { w: S.w * 0.7 });
       x += w;
     });
-    const end = b.y + b.h - rh * 2;
     for (let y = top + rh * 2; y <= end + 0.01; y += rh) o += line(b.x, y, b.x + b.w, y, { w: S.w * 0.7 });
     o += line(b.x, top + rh, b.x + b.w, top + rh, { w: S.w * 1.5 });
     o += rect(b.x, end + rh * 0.4, b.w, rh * 1.6, { r: 1 });
@@ -403,45 +572,374 @@ const R = {
     return o;
   },
 };
-function starPath(cx, cy, r) {
-  let p = '';
-  for (let i = 0; i < 10; i++) {
-    const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r;
-    p += (i ? 'L' : 'M') + (cx + rr * Math.cos(a)).toFixed(2) + ' ' + (cy + rr * Math.sin(a)).toFixed(2);
-  }
-  return `<path d="${p}Z" fill="none" stroke="${S.c}" stroke-width="${S.w}"/>`;
+
+// ======================= punching =======================
+function punchFor(i, W, H) {
+  const p = PUNCH[st.punch];
+  if (!p || !p.off) return null;
+  let side = st.punchSide;
+  if (st.duplex && i % 2 === 1) side = side === 'left' ? 'right' : 'bottom';
+  const vertical = side === 'left' || side === 'right';
+  const L = vertical ? H : W;
+  const offs = p.off(L).filter(o => Math.abs(o) <= L / 2 - p.d);
+  const holes = offs.map(o => vertical
+    ? { x: side === 'left' ? p.edge : W - p.edge, y: H / 2 + o }
+    : { x: W / 2 + o, y: side === 'top' ? p.edge : H - p.edge });
+  return { side, holes, r: p.d / 2, reserve: p.edge + p.d / 2 + 3 };
+}
+function holesSVG(pp) {
+  if (!pp || st.punchStyle === 'none') return '';
+  return pp.holes.map(({ x, y }) => st.punchStyle === 'fill'
+    ? `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${pp.r}" fill="#dcdfe4"/>`
+    : `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${pp.r}" fill="none" stroke="#8d939e" stroke-width="0.25" stroke-dasharray="0.8 0.6"/>`
+      + `<line x1="${(x - 1).toFixed(2)}" y1="${y.toFixed(2)}" x2="${(x + 1).toFixed(2)}" y2="${y.toFixed(2)}" stroke="#8d939e" stroke-width="0.2"/>`
+      + `<line x1="${x.toFixed(2)}" y1="${(y - 1).toFixed(2)}" x2="${x.toFixed(2)}" y2="${(y + 1).toFixed(2)}" stroke="#8d939e" stroke-width="0.2"/>`
+  ).join('');
 }
 
-// ---------- Render ----------
+// ======================= decorations =======================
+const measureCtx = document.createElement('canvas').getContext('2d');
+function fitText(it) {
+  const lines = String(it.text || ' ').split('\n');
+  measureCtx.font = `${it.size * 10}px "${it.font}", sans-serif`;
+  const wmax = Math.max(...lines.map(l => measureCtx.measureText(l || ' ').width)) / 10;
+  it.w = Math.max(it.size, wmax);
+  it.h = it.size * (1 + (lines.length - 1) * 1.3) + it.size * 0.25;
+  return lines;
+}
+function itemBody(it) {
+  if (it.kind === 'text') {
+    const lines = fitText(it);
+    return `<text font-family="${esc(it.font)}, sans-serif" font-size="${it.size}" fill="${it.c}">` +
+      lines.map((l, i) => `<tspan x="0" y="${(it.size * (0.9 + i * 1.3)).toFixed(2)}">${esc(l)}</tspan>`).join('') + '</text>';
+  }
+  if (it.kind === 'emoji') return `<text x="${(it.w / 2).toFixed(2)}" y="${(it.h * 0.86).toFixed(2)}" font-size="${(it.h * 0.92).toFixed(2)}" text-anchor="middle" font-family="sans-serif">${esc(it.text)}</text>`;
+  if (it.kind === 'image') return `<image href="${it.src}" x="0" y="0" width="${it.w.toFixed(2)}" height="${it.h.toFixed(2)}" preserveAspectRatio="none"/>`;
+  const def = ALL_SHAPES[it.shape];
+  return def ? def.draw(it.c, it.c2, it.w, it.h) : '';
+}
+const tf = it => `translate(${it.x.toFixed(2)} ${it.y.toFixed(2)}) rotate(${it.rot || 0} ${(it.w / 2).toFixed(2)} ${(it.h / 2).toFixed(2)})`;
+function itemInner(it) {
+  let o = itemBody(it) + `<rect class="ui" x="-1" y="-1" width="${(it.w + 2).toFixed(2)}" height="${(it.h + 2).toFixed(2)}" fill="transparent"/>`;
+  if (it.id === sel) {
+    o += `<rect class="ui" x="-1" y="-1" width="${(it.w + 2).toFixed(2)}" height="${(it.h + 2).toFixed(2)}" fill="none" stroke="#2f4fc4" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>`;
+    o += `<g class="ui handle"><circle cx="${(it.w + 1).toFixed(2)}" cy="${(it.h + 1).toFixed(2)}" r="4.5" fill="transparent"/><circle cx="${(it.w + 1).toFixed(2)}" cy="${(it.h + 1).toFixed(2)}" r="2" fill="#2f4fc4" stroke="#ffffff" stroke-width="0.5"/></g>`;
+  }
+  return o;
+}
+const itemG = it => `<g data-id="${it.id}" transform="${tf(it)}" opacity="${it.op ?? 1}">${itemInner(it)}</g>`;
+
+// ======================= render =======================
+function dims() { let [W, H] = SIZES[st.size]; if (st.orient === 'l') [W, H] = [H, W]; return [W, H]; }
 function render() {
-  document.querySelectorAll('#types button').forEach(b => b.classList.toggle('on', b.dataset.k === state.type));
-  const color = $('color').value;
-  document.querySelectorAll('#swatches button').forEach(b => b.classList.toggle('on', b.dataset.c === color));
-
-  let [W, H] = SIZES[$('size').value];
-  if ($('orient').value === 'l') [W, H] = [H, W];
-  const m = +$('margin').value, bind = +$('bind').value, sp = +$('spacing').value;
-  $('marginV').textContent = m; $('bindV').textContent = bind; $('spacingV').textContent = sp;
-
-  const t = state.type;
-  $('monthRow').classList.toggle('hidden', t !== 'monthly');
-  $('weekStartRow').classList.toggle('hidden', !['monthly', 'weekly'].includes(t));
-  $('spacingRow').classList.toggle('hidden', ['blank', 'monthly', 'habit'].includes(t));
-
-  S = { c: color, w: +$('weight').value, sp, text: '#3a3833' };
-  const count = Math.max(1, Math.min(60, +$('count').value || 1));
+  const [W, H] = dims(), m = +st.margin;
+  S = { c: st.color, w: +st.weight, sp: +st.spacing, text: '#3a3833' };
+  const count = Math.max(1, Math.min(60, +st.count || 1));
   let html = '';
   for (let i = 0; i < count; i++) {
-    // Binding margin alternates sides for double-sided printing (odd pages: left, even: right)
-    const left = m + (i % 2 === 0 ? bind : 0), right = m + (i % 2 === 1 ? bind : 0);
-    const b = { x: left, y: m, w: W - left - right, h: H - m * 2 };
-    html += `<svg class="page" xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}">
-      <rect width="${W}" height="${H}" fill="#fff"/>${R[t](b, i)}</svg>`;
+    const pp = punchFor(i, W, H);
+    const mg = { left: m, right: m, top: m, bottom: m };
+    if (pp) mg[pp.side] = Math.max(m, pp.reserve);
+    const b = { x: mg.left, y: mg.top, w: W - mg.left - mg.right, h: H - mg.top - mg.bottom };
+    const decor = st.items.filter(it => it.page === 'all' || it.page === i).map(itemG).join('');
+    html += `<div class="sheet"><svg class="page${sel ? ' editing' : ''}" data-page="${i}" xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}">`
+      + `<rect width="${W}" height="${H}" fill="${st.paper}"/>${R[st.type](b, i)}${holesSVG(pp)}${decor}</svg>`
+      + `<small>${i + 1} / ${count}</small></div>`;
   }
   $('preview').innerHTML = html;
   $('pageStyle').textContent = `@page { size: ${W}mm ${H}mm; margin: 0; }`;
+  syncControls();
 }
+
+// ======================= controls =======================
+const FIELDS = ['size', 'orient', 'margin', 'color', 'spacing', 'weight', 'title', 'dateField', 'month', 'weekStart', 'count', 'duplex'];
+function syncControls() {
+  FIELDS.forEach(k => { const el = $(k); if (el.type === 'checkbox') el.checked = !!st[k]; else if (document.activeElement !== el) el.value = st[k]; });
+  $('marginV').textContent = st.margin + 'mm';
+  $('spacingV').textContent = st.spacing + 'mm';
+  document.querySelectorAll('#types button').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === st.type));
+  document.querySelectorAll('#punchTypes button').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === st.punch));
+  document.querySelectorAll('#punchSide button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === st.punchSide));
+  document.querySelectorAll('#punchStyle button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === st.punchStyle));
+  document.querySelectorAll('#lineSwatches button').forEach(b => b.setAttribute('aria-pressed', b.dataset.c === st.color));
+  document.querySelectorAll('#paperSwatches button').forEach(b => b.setAttribute('aria-pressed', b.dataset.c === st.paper));
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === st.tab));
+  ['base', 'punch', 'decor'].forEach(t => { $('panel-' + t).hidden = st.tab !== t; });
+  $('punchInfo').textContent = PUNCH[st.punch].info;
+  $('monthRow').hidden = st.type !== 'monthly';
+  $('weekStartRow').hidden = !['monthly', 'weekly'].includes(st.type);
+  $('spacingRow').hidden = ['blank', 'monthly', 'habit'].includes(st.type);
+  syncSel();
+}
+function syncSel() {
+  const it = st.items.find(x => x.id === sel);
+  $('selPanel').hidden = !it;
+  if (!it) return;
+  const isText = it.kind === 'text', isShape = it.kind === 'shape', def = isShape ? ALL_SHAPES[it.shape] : null;
+  $('selText').hidden = !isText; $('selFontRow').hidden = !isText;
+  $('selColorRow').hidden = !(isText || isShape);
+  $('selColor2Row').hidden = !(isShape && def && def.c2);
+  if (isText && document.activeElement !== $('selText')) $('selText').value = it.text;
+  if (isText) $('selFont').value = it.font;
+  if (it.c) $('selColor').value = it.c;
+  if (it.c2) $('selColor2').value = it.c2;
+  $('selRot').value = it.rot || 0; $('selRotV').textContent = (it.rot || 0) + '°';
+  $('selOp').value = it.op ?? 1; $('selOpV').textContent = Math.round((it.op ?? 1) * 100) + '%';
+  $('selScope').value = it.page === 'all' ? 'all' : 'one';
+}
+function update() { render(); save(); }
+
+TYPES.forEach(([k, label]) => {
+  const b = document.createElement('button'); b.textContent = label; b.dataset.k = k;
+  b.onclick = () => { st.type = k; update(); };
+  $('types').appendChild(b);
+});
+Object.entries(PUNCH).forEach(([k, p]) => {
+  const b = document.createElement('button'); b.textContent = p.name; b.dataset.k = k;
+  b.onclick = () => { st.punch = k; update(); };
+  $('punchTypes').appendChild(b);
+});
+document.querySelectorAll('#punchSide button').forEach(b => b.onclick = () => { st.punchSide = b.dataset.v; update(); });
+document.querySelectorAll('#punchStyle button').forEach(b => b.onclick = () => { st.punchStyle = b.dataset.v; update(); });
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { st.tab = b.dataset.tab; syncControls(); save(); });
+function swatches(el, list, key, title) {
+  list.forEach(c => {
+    const b = document.createElement('button'); b.style.background = c; b.dataset.c = c; b.title = title + ' ' + c; b.setAttribute('aria-label', title + ' ' + c);
+    b.onclick = () => { st[key] = c; update(); };
+    el.appendChild(b);
+  });
+}
+swatches($('lineSwatches'), LINE_COLORS, 'color', '선 색');
+swatches($('paperSwatches'), PAPERS, 'paper', '종이 색');
+FIELDS.forEach(k => $(k).addEventListener('input', e => {
+  const el = e.target;
+  st[k] = el.type === 'checkbox' ? el.checked : (el.type === 'range' || el.type === 'number') ? +el.value : el.value;
+  update();
+}));
+FONTS.forEach(([f, n]) => { const o = document.createElement('option'); o.value = f; o.textContent = n; o.style.fontFamily = `"${f}"`; $('selFont').appendChild(o); });
+
+// sticker palettes
+function thumb(key) {
+  const d = ALL_SHAPES[key], w = d.free ? 60 : 100, h = d.free ? 16 : 100;
+  S = S || { c: '#999', w: 0.25 };
+  return `<svg viewBox="-2 -2 ${w + 4} ${h + 4}" xmlns="http://www.w3.org/2000/svg">${d.draw(d.c, d.c2, w, h)}</svg>`;
+}
+Object.keys(SHAPES).forEach(k => { const b = document.createElement('button'); b.innerHTML = thumb(k); b.setAttribute('aria-label', k + ' 스티커'); b.onclick = () => addShape(k); $('shapeList').appendChild(b); });
+Object.keys(TAPES).forEach(k => { const b = document.createElement('button'); b.innerHTML = thumb(k); b.setAttribute('aria-label', '마스킹 테이프'); b.onclick = () => addShape(k); $('tapeList').appendChild(b); });
+EMOJI.forEach(e => { const b = document.createElement('button'); b.textContent = e; b.onclick = () => addItem({ kind: 'emoji', text: e, w: 12, h: 12 }); $('emojiList').appendChild(b); });
+
+function addItem(it) {
+  const [W, H] = dims();
+  it = Object.assign({ id: uid(), rot: 0, op: 1, page: 'all' }, it);
+  if (it.kind === 'text') fitText(it);
+  it.x = it.x ?? (W - it.w) / 2 + (Math.random() * 16 - 8);
+  it.y = it.y ?? (H - it.h) / 2 + (Math.random() * 16 - 8);
+  st.items.push(it); sel = it.id; selPage = 0;
+  update();
+  const g = document.querySelector(`[data-id="${it.id}"]`);
+  if (g) g.closest('.sheet').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+function addShape(k) {
+  const d = ALL_SHAPES[k];
+  addItem({ kind: 'shape', shape: k, w: d.w || 18, h: d.h || 18, c: d.c, c2: d.c2 });
+}
+$('addText').onclick = () => addItem({ kind: 'text', text: '오늘도 화이팅', font: 'Nanum Pen Script', size: 7, c: '#3a3833' });
+$('addImage').onchange = e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      // Downscale large photos so the saved draft stays small.
+      const max = 1200, s = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      const src = f.type === 'image/png' ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.88);
+      const w = 40, h = 40 * img.height / img.width;
+      addItem({ kind: 'image', src, w, h });
+    };
+    img.src = r.result;
+  };
+  r.readAsDataURL(f);
+};
+
+// selected-item panel
+const curItem = () => st.items.find(x => x.id === sel);
+$('selText').addEventListener('input', e => { const it = curItem(); if (it) { it.text = e.target.value; update(); } });
+$('selFont').addEventListener('input', e => { const it = curItem(); if (it) { it.font = e.target.value; document.fonts.load(`20px "${it.font}"`, '가').then(update); update(); } });
+$('selColor').addEventListener('input', e => { const it = curItem(); if (it) { it.c = e.target.value; update(); } });
+$('selColor2').addEventListener('input', e => { const it = curItem(); if (it) { it.c2 = e.target.value; update(); } });
+$('selRot').addEventListener('input', e => { const it = curItem(); if (it) { it.rot = +e.target.value; update(); } });
+$('selOp').addEventListener('input', e => { const it = curItem(); if (it) { it.op = +e.target.value; update(); } });
+$('selScope').addEventListener('input', e => { const it = curItem(); if (it) { it.page = e.target.value === 'all' ? 'all' : selPage; update(); } });
+$('selFront').onclick = () => { const it = curItem(); if (it) { st.items = st.items.filter(x => x !== it).concat(it); update(); } };
+$('selBack').onclick = () => { const it = curItem(); if (it) { st.items = [it].concat(st.items.filter(x => x !== it)); update(); } };
+$('selDup').onclick = () => { const it = curItem(); if (it) addItem(Object.assign(JSON.parse(JSON.stringify(it)), { id: uid(), x: it.x + 5, y: it.y + 5 })); };
+$('selDel').onclick = () => { st.items = st.items.filter(x => x.id !== sel); sel = null; update(); };
+let clearArmed = null;
+$('clearAll').onclick = () => {
+  const b = $('clearAll');
+  if (!clearArmed) {
+    b.textContent = '한 번 더 누르면 모두 지워져요';
+    clearArmed = setTimeout(() => { b.textContent = '꾸미기 모두 지우기'; clearArmed = null; }, 3000);
+    return;
+  }
+  clearTimeout(clearArmed); clearArmed = null; b.textContent = '꾸미기 모두 지우기';
+  st.items = []; sel = null; update();
+};
+
+// ======================= drag & resize =======================
+function toSvg(svg, e) { return new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM().inverse()); }
+$('preview').addEventListener('pointerdown', e => {
+  const svg = e.target.closest('svg.page');
+  const g = e.target.closest('[data-id]');
+  if (!g) { if (sel && svg) { sel = null; render(); } return; }
+  e.preventDefault();
+  const it = st.items.find(x => x.id === g.dataset.id); if (!it) return;
+  const pageIdx = +svg.dataset.page;
+  const changed = sel !== it.id;
+  sel = it.id; selPage = pageIdx;
+  if (st.tab !== 'decor') { st.tab = 'decor'; }
+  const p = toSvg(svg, e);
+  drag = { mode: e.target.closest('.handle') ? 'resize' : 'move', it, page: pageIdx, p0: p, x0: it.x, y0: it.y, w0: it.w, h0: it.h, size0: it.size };
+  if (changed || e.target.closest('.handle')) render(); else syncControls();
+});
+window.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const svg = document.querySelector(`svg.page[data-page="${drag.page}"]`); if (!svg) return;
+  const p = toSvg(svg, e), dx = p.x - drag.p0.x, dy = p.y - drag.p0.y, it = drag.it;
+  const gs = document.querySelectorAll(`[data-id="${it.id}"]`);
+  if (drag.mode === 'move') {
+    it.x = drag.x0 + dx; it.y = drag.y0 + dy;
+    gs.forEach(g => g.setAttribute('transform', tf(it)));
+  } else {
+    const free = it.kind === 'shape' && ALL_SHAPES[it.shape]?.free;
+    if (free) { it.w = Math.max(4, drag.w0 + dx); it.h = Math.max(3, drag.h0 + dy); }
+    else {
+      const s = Math.max(0.15, Math.max((drag.w0 + dx) / drag.w0, (drag.h0 + dy) / drag.h0));
+      if (it.kind === 'text') it.size = Math.max(2, drag.size0 * s);
+      else { it.w = drag.w0 * s; it.h = drag.h0 * s; }
+    }
+    gs.forEach(g => { g.innerHTML = itemInner(it); g.setAttribute('transform', tf(it)); });
+  }
+});
+window.addEventListener('pointerup', () => { if (drag) { drag = null; save(); syncControls(); } });
+window.addEventListener('keydown', e => {
+  if (!sel || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  const it = curItem(); if (!it) return;
+  const mv = { ArrowLeft: [-0.5, 0], ArrowRight: [0.5, 0], ArrowUp: [0, -0.5], ArrowDown: [0, 0.5] }[e.key];
+  if (mv) { e.preventDefault(); it.x += mv[0]; it.y += mv[1]; update(); }
+  else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); $('selDel').click(); }
+  else if (e.key === 'Escape') { sel = null; render(); }
+});
+
+// ======================= PDF export =======================
+function canvasFont(node) {
+  const fam = (node.getAttribute('font-family') || 'sans-serif').split(',').map(f => { f = f.trim(); return /\s/.test(f) && !/^["']/.test(f) ? `"${f}"` : f; }).join(', ');
+  return `${node.getAttribute('font-weight') || 400} ${node.getAttribute('font-size') || 3}px ${fam}`;
+}
+function applyTransform(ctx, t) {
+  if (!t) return;
+  for (const [, fn, args] of t.matchAll(/(translate|rotate|scale)\(([^)]*)\)/g)) {
+    const a = args.split(/[\s,]+/).filter(Boolean).map(Number);
+    if (fn === 'translate') ctx.translate(a[0], a[1] || 0);
+    else if (fn === 'scale') ctx.scale(a[0], a[1] ?? a[0]);
+    else { const r = a[0] * Math.PI / 180; if (a.length > 2) { ctx.translate(a[1], a[2]); ctx.rotate(r); ctx.translate(-a[1], -a[2]); } else ctx.rotate(r); }
+  }
+}
+function paint(ctx, node, p) {
+  const fill = node.getAttribute('fill'), stroke = node.getAttribute('stroke');
+  if (fill && fill !== 'none' && fill !== 'transparent') {
+    ctx.save(); ctx.globalAlpha *= +(node.getAttribute('fill-opacity') ?? 1); ctx.fillStyle = fill;
+    p ? ctx.fill(p) : ctx.fill(); ctx.restore();
+  }
+  if (stroke && stroke !== 'none') {
+    ctx.save(); ctx.strokeStyle = stroke; ctx.lineWidth = +(node.getAttribute('stroke-width') || 1);
+    ctx.lineCap = node.getAttribute('stroke-linecap') || 'butt'; ctx.lineJoin = node.getAttribute('stroke-linejoin') || 'miter';
+    const da = node.getAttribute('stroke-dasharray'); if (da) ctx.setLineDash(da.split(/[\s,]+/).map(Number));
+    p ? ctx.stroke(p) : ctx.stroke(); ctx.restore();
+  }
+}
+function drawNode(ctx, node, imgs) {
+  if (node.nodeType !== 1 || node.classList.contains('ui')) return;
+  const tag = node.tagName.toLowerCase(), A = n => +(node.getAttribute(n) || 0);
+  ctx.save();
+  applyTransform(ctx, node.getAttribute('transform'));
+  if (node.hasAttribute('opacity')) ctx.globalAlpha *= +node.getAttribute('opacity');
+  switch (tag) {
+    case 'svg': case 'g': for (const c of node.children) drawNode(ctx, c, imgs); break;
+    case 'rect': {
+      ctx.beginPath(); const rx = A('rx');
+      if (rx && ctx.roundRect) ctx.roundRect(A('x'), A('y'), A('width'), A('height'), rx); else ctx.rect(A('x'), A('y'), A('width'), A('height'));
+      paint(ctx, node); break;
+    }
+    case 'line': ctx.beginPath(); ctx.moveTo(A('x1'), A('y1')); ctx.lineTo(A('x2'), A('y2')); paint(ctx, node); break;
+    case 'circle': ctx.beginPath(); ctx.arc(A('cx'), A('cy'), A('r'), 0, Math.PI * 2); paint(ctx, node); break;
+    case 'path': paint(ctx, node, new Path2D(node.getAttribute('d'))); break;
+    case 'image': { const im = imgs.get(node.getAttribute('href')); if (im) ctx.drawImage(im, A('x'), A('y'), A('width'), A('height')); break; }
+    case 'text': {
+      ctx.font = canvasFont(node); ctx.fillStyle = node.getAttribute('fill') || '#000';
+      const anchor = node.getAttribute('text-anchor'); ctx.textAlign = anchor === 'middle' ? 'center' : anchor === 'end' ? 'right' : 'left';
+      ctx.textBaseline = 'alphabetic';
+      const spans = node.querySelectorAll('tspan');
+      if (spans.length) spans.forEach(s => ctx.fillText(s.textContent, +s.getAttribute('x'), +s.getAttribute('y')));
+      else ctx.fillText(node.textContent, A('x'), A('y'));
+      break;
+    }
+  }
+  ctx.restore();
+}
+let downloads = null;
+if (window.claude && typeof window.claude.use === 'function') {
+  window.claude.use('downloads').then(d => { downloads = d; }).catch(() => {});
+} else if (window.top === window.self) {
+  $('print').hidden = false;
+}
+$('print').onclick = () => { sel = null; render(); window.print(); };
+const status = msg => { $('status').textContent = msg; };
+$('pdf').onclick = async () => {
+  const btn = $('pdf');
+  btn.disabled = true; status('PDF를 만드는 중이에요…');
+  const prevSel = sel; sel = null; render();
+  try {
+    await Promise.all(FONTS.map(([f]) => document.fonts.load(`20px "${f}"`, '가A1')));
+    const imgs = new Map();
+    await Promise.all(st.items.filter(i => i.kind === 'image').map(i => new Promise(res => {
+      const im = new Image(); im.onload = () => { imgs.set(i.src, im); res(); }; im.onerror = res; im.src = i.src;
+    })));
+    const [W, H] = dims(), orient = W > H ? 'landscape' : 'portrait';
+    const pdf = new window.jspdf.jsPDF({ unit: 'mm', format: [W, H], orientation: orient, compress: true });
+    const k = 8; // px per mm, about 200 dpi
+    const pages = [...document.querySelectorAll('#preview svg.page')];
+    for (let i = 0; i < pages.length; i++) {
+      const cv = document.createElement('canvas'); cv.width = Math.round(W * k); cv.height = Math.round(H * k);
+      const ctx = cv.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cv.width, cv.height); ctx.scale(k, k);
+      drawNode(ctx, pages[i], imgs);
+      if (i) pdf.addPage([W, H], orient);
+      pdf.addImage(cv.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, W, H, undefined, 'FAST');
+      status(`PDF를 만드는 중이에요… ${i + 1}/${pages.length}`);
+      await new Promise(r => setTimeout(r));
+    }
+    const name = `속지_${TYPES.find(t => t[0] === st.type)[1].replace(/\s/g, '')}_${st.size}.pdf`;
+    const blob = pdf.output('blob');
+    if (downloads) {
+      try { await downloads.save({ filename: name, data: blob }); status('PDF를 저장했어요. 인쇄할 때 배율을 100%로 두세요.'); }
+      catch (err) { status(err && err.code === 'declined' ? '저장을 취소했어요.' : '이 화면에서는 저장할 수 없어요. 잠시 후 다시 눌러 보세요.'); }
+    } else {
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      status('PDF를 저장했어요. 인쇄할 때 배율을 100%로 두세요.');
+    }
+  } catch (err) {
+    status('PDF를 만들지 못했어요: ' + (err && err.message || err));
+  } finally {
+    sel = prevSel; render(); btn.disabled = false;
+  }
+};
+
 render();
+document.fonts && document.fonts.ready.then(render);
 </script>
 </body>
 </html>
