@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>속지 메이커</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f3ee;
+    --panel: #ffffff;
+    --ink: #2b2a28;
+    --muted: #7a756d;
+    --line: #e5dfd5;
+    --accent: #c26d4a;
+    --accent-soft: #f6e5dc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1c1b19; --panel: #262522; --ink: #eeeae3; --muted: #a39d93;
+      --line: #3a3833; --accent: #e0896a; --accent-soft: #3d2b23;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Noto Sans KR", system-ui, sans-serif; font-size: 14px;
+  }
+  header {
+    padding: 18px 24px; display: flex; align-items: baseline; gap: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  header h1 { margin: 0; font-family: "Gowun Dodum", sans-serif; font-size: 24px; }
+  header p { margin: 0; color: var(--muted); }
+  .app { display: grid; grid-template-columns: 320px 1fr; min-height: calc(100vh - 66px); }
+  aside {
+    background: var(--panel); border-right: 1px solid var(--line);
+    padding: 16px 20px 32px; overflow-y: auto; max-height: calc(100vh - 66px);
+    position: sticky; top: 0;
+  }
+  .group { margin-bottom: 20px; }
+  .group h2 { font-size: 12px; letter-spacing: .04em; color: var(--muted); margin: 0 0 8px; font-weight: 500; }
+  .types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .types button {
+    border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+    border-radius: 8px; padding: 8px 4px; cursor: pointer; font: inherit; font-size: 12.5px;
+  }
+  .types button.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+  label.row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 8px 0; }
+  label.row span { flex: 0 0 auto; }
+  select, input[type=text], input[type=number] {
+    font: inherit; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; width: 150px;
+  }
+  input[type=range] { width: 150px; accent-color: var(--accent); }
+  input[type=color] { width: 40px; height: 28px; border: 1px solid var(--line); border-radius: 6px; padding: 0; background: none; }
+  .swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+  .swatches button { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+  .swatches button.on { border-color: var(--ink); }
+  .hidden { display: none !important; }
+  .actions { display: flex; gap: 8px; margin-top: 8px; }
+  .btn {
+    flex: 1; border: 0; border-radius: 8px; padding: 11px; font: inherit; font-weight: 700;
+    background: var(--accent); color: #fff; cursor: pointer;
+  }
+  .btn.ghost { background: var(--accent-soft); color: var(--accent); }
+  .hint { color: var(--muted); font-size: 12px; line-height: 1.5; margin-top: 10px; }
+  main { padding: 28px; display: flex; flex-direction: column; align-items: center; gap: 24px; overflow: auto; }
+  .page {
+    background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.12); display: block;
+    max-width: 100%; height: auto;
+  }
+  @media (max-width: 760px) {
+    .app { grid-template-columns: 1fr; }
+    aside { position: static; max-height: none; border-right: 0; border-bottom: 1px solid var(--line); }
+    main { padding: 16px; }
+    header { padding: 14px 16px; flex-direction: column; gap: 2px; }
+  }
+  @media print {
+    header, aside { display: none !important; }
+    body { background: #fff; }
+    .app { display: block; }
+    main { padding: 0; gap: 0; display: block; }
+    .page { box-shadow: none; page-break-after: always; break-after: page; max-width: none; }
+    .page:last-child { page-break-after: auto; break-after: auto; }
+  }
+</style>
+<style id="pageStyle"></style>
+</head>
+<body>
+<header>
+  <h1>속지 메이커</h1>
+  <p>나만의 다이어리·노트 속지를 만들어서 바로 인쇄하세요</p>
+</header>
+<div class="app">
+  <aside>
+    <div class="group">
+      <h2>속지 종류</h2>
+      <div class="types" id="types"></div>
+    </div>
+
+    <div class="group">
+      <h2>용지</h2>
+      <label class="row"><span>크기</span>
+        <select id="size">
+          <option value="A4">A4 (210×297)</option>
+          <option value="A5" selected>A5 (148×210)</option>
+          <option value="B5">B5 (182×257)</option>
+          <option value="A6">A6 (105×148)</option>
+          <option value="HB">HB 6공 (95×170)</option>
+          <option value="LETTER">Letter (216×279)</option>
+        </select>
+      </label>
+      <label class="row"><span>방향</span>
+        <select id="orient"><option value="p">세로</option><option value="l">가로</option></select>
+      </label>
+      <label class="row"><span>여백 <b id="marginV"></b>mm</span>
+        <input type="range" id="margin" min="5" max="25" value="12">
+      </label>
+      <label class="row"><span>바인딩 여백 <b id="bindV"></b>mm</span>
+        <input type="range" id="bind" min="0" max="20" value="0">
+      </label>
+    </div>
+
+    <div class="group">
+      <h2>스타일</h2>
+      <label class="row"><span>선 색상</span>
+        <div class="swatches" id="swatches"></div>
+      </label>
+      <label class="row"><span>직접 선택</span><input type="color" id="color" value="#b9b2a6"></label>
+      <label class="row" id="spacingRow"><span>칸 간격 <b id="spacingV"></b>mm</span>
+        <input type="range" id="spacing" min="4" max="12" step="0.5" value="7">
+      </label>
+      <label class="row"><span>선 굵기</span>
+        <select id="weight">
+          <option value="0.15">얇게</option>
+          <option value="0.25" selected>보통</option>
+          <option value="0.4">굵게</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="group">
+      <h2>내용</h2>
+      <label class="row"><span>제목</span><input type="text" id="title" placeholder="예: My Diary"></label>
+      <label class="row"><span>날짜 칸</span>
+        <select id="dateField"><option value="1">표시</option><option value="0">숨김</option></select>
+      </label>
+      <label class="row" id="monthRow"><span>연/월</span><input type="month" id="month"></label>
+      <label class="row" id="weekStartRow"><span>한 주 시작</span>
+        <select id="weekStart"><option value="1">월요일</option><option value="0">일요일</option></select>
+      </label>
+      <label class="row"><span>페이지 수</span><input type="number" id="count" min="1" max="60" value="1"></label>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="print">인쇄 / PDF 저장</button>
+    </div>
+    <p class="hint">인쇄 창에서 <b>용지 크기를 선택한 크기와 같게</b>, 배율은 <b>100% (실제 크기)</b>, 머리글·바닥글은 끄면 정확하게 나옵니다. "PDF로 저장"을 고르면 파일로 받을 수 있어요.</p>
+  </aside>
+  <main id="preview"></main>
+</div>
+
+<script>
+const SIZES = { A4:[210,297], A5:[148,210], B5:[182,257], A6:[105,148], HB:[95,170], LETTER:[215.9,279.4] };
+const TYPES = [
+  ['lined','줄노트'], ['grid','모눈'], ['dot','도트'],
+  ['blank','무지'], ['todo','투두 리스트'], ['daily','데일리'],
+  ['weekly','위클리'], ['monthly','먼슬리'], ['habit','해빗 트래커'],
+  ['cornell','코넬 노트'], ['reading','독서 기록'], ['budget','가계부'],
+];
+const COLORS = ['#b9b2a6','#9fb4c7','#a9c2a0','#e0a8a8','#c7b3dd','#555555'];
+const DAYS_KO = ['일','월','화','수','목','금','토'];
+
+const $ = id => document.getElementById(id);
+const state = { type: 'lined' };
+
+// ---------- UI setup ----------
+TYPES.forEach(([k, label]) => {
+  const b = document.createElement('button');
+  b.textContent = label; b.dataset.k = k;
+  b.onclick = () => { state.type = k; render(); };
+  $('types').appendChild(b);
+});
+COLORS.forEach(c => {
+  const b = document.createElement('button');
+  b.style.background = c; b.dataset.c = c; b.type = 'button';
+  b.onclick = e => { e.preventDefault(); $('color').value = c; render(); };
+  $('swatches').appendChild(b);
+});
+const now = new Date();
+$('month').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+document.querySelectorAll('aside input, aside select').forEach(el => el.addEventListener('input', render));
+$('print').onclick = () => window.print();
+
+// ---------- SVG helpers ----------
+let S; // current style context
+function line(x1,y1,x2,y2,opt={}) {
+  const w = opt.w ?? S.w, c = opt.c ?? S.c, dash = opt.dash ? ` stroke-dasharray="${opt.dash}"` : '';
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}"${dash} stroke-linecap="round"/>`;
+}
+function rect(x,y,w,h,opt={}) {
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${opt.r ?? 0}" fill="${opt.fill ?? 'none'}" stroke="${opt.c ?? S.c}" stroke-width="${opt.w ?? S.w}"/>`;
+}
+function text(x,y,t,opt={}) {
+  const esc = String(t).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+  return `<text x="${x}" y="${y}" font-size="${opt.size ?? 3}" fill="${opt.fill ?? S.text}" font-family="Gowun Dodum, Noto Sans KR, sans-serif" text-anchor="${opt.anchor ?? 'start'}" font-weight="${opt.bold ? 700 : 400}">${esc}</text>`;
+}
+function hLines(x, y0, w, y1, sp, opt) {
+  let o = ''; for (let y = y0; y <= y1 + 0.01; y += sp) o += line(x, y, x + w, y, opt); return o;
+}
+function gridPat(x, y, w, h, sp) {
+  let o = '';
+  const cols = Math.floor(w / sp), rows = Math.floor(h / sp);
+  const gx = x + (w - cols * sp) / 2, gy = y + (h - rows * sp) / 2;
+  for (let i = 0; i <= cols; i++) o += line(gx + i*sp, gy, gx + i*sp, gy + rows*sp, { w: S.w * 0.8 });
+  for (let j = 0; j <= rows; j++) o += line(gx, gy + j*sp, gx + cols*sp, gy + j*sp, { w: S.w * 0.8 });
+  return o;
+}
+function dotPat(x, y, w, h, sp) {
+  let o = '';
+  const cols = Math.floor(w / sp), rows = Math.floor(h / sp);
+  const gx = x + (w - cols * sp) / 2, gy = y + (h - rows * sp) / 2;
+  const r = Math.max(0.25, S.w * 1.3);
+  for (let i = 0; i <= cols; i++) for (let j = 0; j <= rows; j++)
+    o += `<circle cx="${(gx+i*sp).toFixed(2)}" cy="${(gy+j*sp).toFixed(2)}" r="${r}" fill="${S.c}"/>`;
+  return o;
+}
+function checkbox(x, y, s) { return rect(x, y, s, s, { r: 0.6 }); }
+
+// Header: title + date. Returns {svg, y} where y = content start
+function header(b, title, pageNo) {
+  let o = '', y = b.y;
+  const t = $('title').value.trim() || title;
+  const showDate = $('dateField').value === '1';
+  if (!t && !showDate) return { svg: '', y };
+  o += text(b.x, y + 6, t, { size: 5.2, bold: true });
+  if (showDate) {
+    const dw = Math.min(46, b.w * 0.42);
+    o += text(b.x + b.w - dw, y + 6, 'DATE', { size: 2.6, fill: S.c });
+    o += line(b.x + b.w - dw + 10, y + 6.5, b.x + b.w, y + 6.5);
+  }
+  o += line(b.x, y + 10, b.x + b.w, y + 10, { w: S.w * 2 });
+  return { svg: o, y: y + 15 };
+}
+
+// ---------- Page renderers: each returns SVG content inside box b ----------
+const R = {
+  lined(b) { const h = header(b, ''); return h.svg + hLines(b.x, h.y + S.sp, b.w, b.y + b.h, S.sp); },
+  grid(b)  { const h = header(b, ''); return h.svg + gridPat(b.x, h.y, b.w, b.y + b.h - h.y, S.sp); },
+  dot(b)   { const h = header(b, ''); return h.svg + dotPat(b.x, h.y, b.w, b.y + b.h - h.y, S.sp); },
+  blank(b) { return header(b, '').svg; },
+
+  todo(b) {
+    const h = header(b, 'TO DO LIST'); let o = h.svg;
+    const sp = Math.max(S.sp, 7), cb = Math.min(3.6, sp * 0.5);
+    for (let y = h.y + sp; y <= b.y + b.h + 0.01; y += sp) {
+      o += checkbox(b.x + 1, y - sp/2 - cb/2, cb);
+      o += line(b.x + cb + 4, y, b.x + b.w, y);
+    }
+    return o;
+  },
+
+  daily(b) {
+    const h = header(b, 'DAILY'); let o = h.svg;
+    const top = h.y, colW = b.w * 0.42, gap = 5;
+    // Left: timeline 06~24
+    const hours = []; for (let i = 6; i <= 24; i++) hours.push(i);
+    const slot = (b.y + b.h - top - 6) / hours.length;
+    o += text(b.x, top + 3, 'SCHEDULE', { size: 2.8, bold: true, fill: S.c });
+    hours.forEach((hr, i) => {
+      const y = top + 6 + i * slot;
+      o += text(b.x, y + slot * 0.62, String(hr % 24).padStart(2,'0'), { size: 2.4, fill: S.c });
+      o += line(b.x + 6, y + slot, b.x + colW, y + slot, { w: S.w * 0.8 });
+      o += line(b.x + 6 + (colW - 6)/2, y + 1, b.x + 6 + (colW - 6)/2, y + slot - 1, { w: S.w * 0.6, dash: '0.6 0.8' });
+    });
+    // Right: to do + memo
+    const rx = b.x + colW + gap, rw = b.w - colW - gap;
+    const mid = top + (b.y + b.h - top) * 0.55;
+    o += text(rx, top + 3, 'TO DO', { size: 2.8, bold: true, fill: S.c });
+    for (let y = top + 6 + S.sp; y <= mid - 2; y += S.sp) {
+      o += checkbox(rx, y - S.sp/2 - 1.5, 3); o += line(rx + 5, y, rx + rw, y);
+    }
+    o += text(rx, mid + 4, 'MEMO', { size: 2.8, bold: true, fill: S.c });
+    o += dotPat(rx, mid + 6, rw, b.y + b.h - mid - 6, 5);
+    return o;
+  },
+
+  weekly(b) {
+    const h = header(b, 'WEEKLY'); let o = h.svg;
+    const ws = +$('weekStart').value;
+    const days = [0,1,2,3,4,5,6].map(i => DAYS_KO[(i + ws) % 7]);
+    const cells = [...days, 'MEMO'];
+    const cols = 2, rows = 4, gap = 3;
+    const cw = (b.w - gap) / cols, ch = (b.y + b.h - h.y - gap * (rows - 1)) / rows;
+    cells.forEach((d, i) => {
+      const c = i % cols, r = Math.floor(i / cols);
+      const x = b.x + c * (cw + gap), y = h.y + r * (ch + gap);
+      o += rect(x, y, cw, ch, { r: 1.5 });
+      const isSun = d === '일', isSat = d === '토';
+      o += text(x + 3, y + 5, d, { size: 3.2, bold: true, fill: isSun ? '#d07070' : isSat ? '#6f8fc0' : S.text });
+      if (d !== 'MEMO') { o += text(x + 9, y + 5, '/', { size: 2.8, fill: S.c }); }
+      o += line(x, y + 7.5, x + cw, y + 7.5, { w: S.w * 0.8 });
+      for (let ly = y + 7.5 + S.sp; ly < y + ch - 1; ly += S.sp) o += line(x + 2, ly, x + cw - 2, ly, { w: S.w * 0.6, dash: d === 'MEMO' ? '0.6 0.8' : null });
+    });
+    return o;
+  },
+
+  monthly(b, pageIdx) {
+    const [yy, mm] = ($('month').value || '').split('-').map(Number);
+    const base = yy ? new Date(yy, mm - 1 + pageIdx, 1) : new Date(now.getFullYear(), now.getMonth() + pageIdx, 1);
+    const Y = base.getFullYear(), M = base.getMonth();
+    const ws = +$('weekStart').value;
+    let o = '';
+    const userTitle = $('title').value.trim();
+    o += text(b.x, b.y + 9, String(M + 1).padStart(2, '0'), { size: 11, bold: true });
+    o += text(b.x + 17, b.y + 9, `${Y}  ${['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'][M]}`, { size: 3.2, fill: S.c });
+    if (userTitle) o += text(b.x + b.w, b.y + 9, userTitle, { size: 3.6, anchor: 'end', bold: true });
+    const top = b.y + 15, cw = b.w / 7;
+    for (let i = 0; i < 7; i++) {
+      const d = (i + ws) % 7;
+      o += text(b.x + cw * i + cw / 2, top + 3.5, DAYS_KO[d], { size: 2.8, anchor: 'middle', bold: true, fill: d === 0 ? '#d07070' : d === 6 ? '#6f8fc0' : S.text });
+    }
+    const first = (new Date(Y, M, 1).getDay() - ws + 7) % 7;
+    const dim = new Date(Y, M + 1, 0).getDate();
+    const weeks = Math.ceil((first + dim) / 7);
+    const gy = top + 6, ch = (b.y + b.h - gy) / weeks;
+    o += line(b.x, gy, b.x + b.w, gy, { w: S.w * 2 });
+    for (let r = 1; r <= weeks; r++) o += line(b.x, gy + r * ch, b.x + b.w, gy + r * ch);
+    for (let c = 1; c < 7; c++) o += line(b.x + c * cw, gy, b.x + c * cw, gy + weeks * ch, { w: S.w * 0.7 });
+    for (let d = 1; d <= dim; d++) {
+      const idx = first + d - 1, c = idx % 7, r = Math.floor(idx / 7);
+      const wd = (c + ws) % 7;
+      o += text(b.x + c * cw + 1.5, gy + r * ch + 4, d, { size: 2.8, fill: wd === 0 ? '#d07070' : wd === 6 ? '#6f8fc0' : S.text });
+    }
+    return o;
+  },
+
+  habit(b) {
+    const h = header(b, 'HABIT TRACKER'); let o = h.svg;
+    const nameW = Math.min(32, b.w * 0.28), days = 31;
+    const cw = (b.w - nameW) / days, top = h.y;
+    const rows = Math.max(6, Math.floor((b.y + b.h - top - 6) / Math.max(cw * 1.6, 6)));
+    const rh = (b.y + b.h - top - 6) / rows;
+    o += text(b.x, top + 4, 'HABIT', { size: 2.6, bold: true, fill: S.c });
+    for (let d = 1; d <= days; d++) o += text(b.x + nameW + cw * (d - 0.5), top + 4, d, { size: Math.min(2.2, cw * 0.8), anchor: 'middle', fill: S.c });
+    for (let r = 0; r <= rows; r++) o += line(b.x, top + 6 + r * rh, b.x + b.w, top + 6 + r * rh, { w: r === 0 ? S.w * 2 : S.w });
+    for (let d = 0; d <= days; d++) o += line(b.x + nameW + cw * d, top + 6, b.x + nameW + cw * d, top + 6 + rows * rh, { w: S.w * 0.6 });
+    return o;
+  },
+
+  cornell(b) {
+    const h = header(b, ''); let o = h.svg;
+    const cue = b.w * 0.3, sumH = (b.y + b.h - h.y) * 0.2, sumY = b.y + b.h - sumH;
+    o += text(b.x, h.y + 3, 'KEYWORD', { size: 2.6, bold: true, fill: S.c });
+    o += text(b.x + cue + 3, h.y + 3, 'NOTES', { size: 2.6, bold: true, fill: S.c });
+    o += line(b.x + cue, h.y, b.x + cue, sumY, { w: S.w * 2 });
+    o += hLines(b.x, h.y + 5 + S.sp, b.w, sumY - 1, S.sp);
+    o += line(b.x, sumY, b.x + b.w, sumY, { w: S.w * 2 });
+    o += text(b.x, sumY + 5, 'SUMMARY', { size: 2.6, bold: true, fill: S.c });
+    o += hLines(b.x, sumY + 6 + S.sp, b.w, b.y + b.h, S.sp, { dash: '0.6 0.8' });
+    return o;
+  },
+
+  reading(b) {
+    const h = header(b, 'READING LOG'); let o = h.svg;
+    const fields = ['제목', '저자', '출판사', '읽은 기간'];
+    let y = h.y;
+    fields.forEach(f => {
+      o += text(b.x, y + 5, f, { size: 2.8, fill: S.c });
+      o += line(b.x + 16, y + 6, b.x + b.w, y + 6); y += 9;
+    });
+    o += text(b.x, y + 5, '별점', { size: 2.8, fill: S.c });
+    for (let i = 0; i < 5; i++) o += starPath(b.x + 19 + i * 6, y + 3.8, 2.3);
+    y += 11;
+    o += text(b.x, y + 3, '인상 깊은 문장', { size: 2.8, bold: true, fill: S.c });
+    const quoteH = (b.y + b.h - y) * 0.35;
+    o += rect(b.x, y + 5, b.w, quoteH, { r: 1.5 });
+    y += quoteH + 12;
+    o += text(b.x, y, '느낀 점', { size: 2.8, bold: true, fill: S.c });
+    o += hLines(b.x, y + 2 + S.sp, b.w, b.y + b.h, S.sp);
+    return o;
+  },
+
+  budget(b) {
+    const h = header(b, 'BUDGET'); let o = h.svg;
+    const cols = [['날짜', .14], ['내역', .40], ['수입', .15], ['지출', .15], ['잔액', .16]];
+    const top = h.y, rh = Math.max(S.sp, 6.5);
+    let x = b.x;
+    o += rect(b.x, top, b.w, rh, { fill: S.c + '33', w: S.w });
+    cols.forEach(([n, r], i) => {
+      const w = b.w * r;
+      o += text(x + w / 2, top + rh * 0.68, n, { size: 2.6, anchor: 'middle', bold: true });
+      if (i > 0) o += line(x, top, x, b.y + b.h - rh * 2, { w: S.w * 0.7 });
+      x += w;
+    });
+    const end = b.y + b.h - rh * 2;
+    for (let y = top + rh * 2; y <= end + 0.01; y += rh) o += line(b.x, y, b.x + b.w, y, { w: S.w * 0.7 });
+    o += line(b.x, top + rh, b.x + b.w, top + rh, { w: S.w * 1.5 });
+    o += rect(b.x, end + rh * 0.4, b.w, rh * 1.6, { r: 1 });
+    o += text(b.x + 3, end + rh * 1.45, '합계', { size: 2.8, bold: true });
+    return o;
+  },
+};
+function starPath(cx, cy, r) {
+  let p = '';
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r;
+    p += (i ? 'L' : 'M') + (cx + rr * Math.cos(a)).toFixed(2) + ' ' + (cy + rr * Math.sin(a)).toFixed(2);
+  }
+  return `<path d="${p}Z" fill="none" stroke="${S.c}" stroke-width="${S.w}"/>`;
+}
+
+// ---------- Render ----------
+function render() {
+  document.querySelectorAll('#types button').forEach(b => b.classList.toggle('on', b.dataset.k === state.type));
+  const color = $('color').value;
+  document.querySelectorAll('#swatches button').forEach(b => b.classList.toggle('on', b.dataset.c === color));
+
+  let [W, H] = SIZES[$('size').value];
+  if ($('orient').value === 'l') [W, H] = [H, W];
+  const m = +$('margin').value, bind = +$('bind').value, sp = +$('spacing').value;
+  $('marginV').textContent = m; $('bindV').textContent = bind; $('spacingV').textContent = sp;
+
+  const t = state.type;
+  $('monthRow').classList.toggle('hidden', t !== 'monthly');
+  $('weekStartRow').classList.toggle('hidden', !['monthly', 'weekly'].includes(t));
+  $('spacingRow').classList.toggle('hidden', ['blank', 'monthly', 'habit'].includes(t));
+
+  S = { c: color, w: +$('weight').value, sp, text: '#3a3833' };
+  const count = Math.max(1, Math.min(60, +$('count').value || 1));
+  let html = '';
+  for (let i = 0; i < count; i++) {
+    // Binding margin alternates sides for double-sided printing (odd pages: left, even: right)
+    const left = m + (i % 2 === 0 ? bind : 0), right = m + (i % 2 === 1 ? bind : 0);
+    const b = { x: left, y: m, w: W - left - right, h: H - m * 2 };
+    html += `<svg class="page" xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}">
+      <rect width="${W}" height="${H}" fill="#fff"/>${R[t](b, i)}</svg>`;
+  }
+  $('preview').innerHTML = html;
+  $('pageStyle').textContent = `@page { size: ${W}mm ${H}mm; margin: 0; }`;
+}
+render();
+</script>
+</body>
+</html>
